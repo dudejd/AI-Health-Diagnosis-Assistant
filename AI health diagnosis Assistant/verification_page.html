@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Email Verification - AI Health Assistant
+  </title>
+  <!-- Brand Typography: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <!-- Font Awesome 6 -->
+  <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZh3M1YhDT1y/05B7BqG1F5GzJY9hwqQf7G2lWwZ8Xo3C4G/uhxQfCtGx9Y4E+8w==" referrerpolicy="no-referrer" rel="stylesheet">
+   <!-- SweetAlert2 -->
+   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet"/>
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js">
+   </script>
+   <!-- ApexCharts (not used on this page but available globally) -->
+   <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+   </script>
+   <!-- Global Theme CSS -->
+   <link href="style.css" rel="stylesheet"/>
+   <style>
+    /* Page-specific CSS (move to verification_page.css if desired). Avoids global overrides. */
+    body { font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; }
+    .main-area { min-height: calc(100vh - 64px); }
+    .card-center { min-height: calc(100vh - 64px); display: flex; align-items: center; justify-content: center; }
+    .accessibility-mode .verification-card { font-size: 1.125rem; line-height: 1.8; }
+    .accessibility-mode .verification-card h2 { font-size: 1.5rem; }
+    .accessibility-mode .cta-btn { transform: scale(1.05); }
+    /* Notification panel animation */
+    .notif-panel { transition: transform 0.3s ease, opacity 0.3s ease; transform: translateX(100%); opacity: 0; }
+    .notif-panel.open { transform: translateX(0); opacity: 1; }
+    /* Help assistant panel animation */
+    .help-panel { transition: transform 0.3s ease, opacity 0.3s ease; transform: translateY(110%); opacity: 0; }
+    .help-panel.open { transform: translateY(0); opacity: 1; }
+    .countdown-badge { font-variant-numeric: tabular-nums; }
+    .status-icon-shadow { filter: drop-shadow(0 6px 20px rgba(0,0,0,0.08)); }
+   </style>
+  </link>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="bg-gray-50 text-gray-800">
+  <!-- Common Auth Header (links adapted to relative .html paths as required) -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <a class="flex items-center gap-2" href="./home_page.html">
+      <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+       <i class="fa-solid fa-heart-pulse">
+       </i>
+      </span>
+      <span class="font-semibold">
+       AI Health Assistant
+      </span>
+     </a>
+     <div class="hidden md:flex items-center gap-4">
+      <a class="px-3 py-2 rounded-md bg-white/20 hover:bg-white/30" href="./home_page.html">
+       Back to Home
+      </a>
+      <a class="flex items-center gap-2 px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./about_page.html">
+       <i class="fa-regular fa-question-circle">
+       </i>
+       <span>
+        Support
+       </span>
+      </a>
+     </div>
+     <button class="md:hidden inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white/20" id="sidebarToggle">
+      Menu
+     </button>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+})();
+   </script>
+  </header>
+  <!-- Common Auth Sidebar (included on Verification page to offer quick access to auth flows). Active state applied to current page. -->
+  <aside class="mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 space-y-2">
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./login_page.html">
+     <i class="fa-solid fa-right-to-bracket text-[#008080]">
+     </i>
+     <span>
+      Login
+     </span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./registration_page.html">
+     <i class="fa-solid fa-user-plus text-[#008080]">
+     </i>
+     <span>
+      Register
+     </span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./password_reset_page.html">
+     <i class="fa-solid fa-key text-[#008080]">
+     </i>
+     <span>
+      Forgot Password
+     </span>
+    </a>
+    <a aria-current="page" class="flex items-center gap-3 px-3 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF]" href="./verification_page.html">
+     <i class="fa-solid fa-envelope-open-text text-[#008080]">
+     </i>
+     <span>
+      Email Verification
+     </span>
+    </a>
+    <div class="mt-4 border-t pt-4">
+     <a class="flex items-center gap-2 text-sm px-3 py-2 rounded-md hover:bg-gray-100" href="./about_page.html">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span>
+       Help &amp; About
+      </span>
+     </a>
+    </div>
+   </nav>
+  </aside>
+  <!-- Main Content Area -->
+  <main class="main-area pt-20 md:pl-64">
+   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Accessibility Mode Toggle -->
+    <div class="flex items-center justify-end mb-4">
+     <button class="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50" id="accessibilityToggle" title="High-contrast mode">
+      <i class="fa-solid fa-universal-access text-[#008080]">
+      </i>
+      <span>
+       Accessibility Mode
+      </span>
+     </button>
+    </div>
+    <!-- Verification Status Component -->
+    <section class="verification-card card-center" id="verificationSection">
+     <div class="card w-full max-w-2xl rounded-xl shadow border">
+      <div class="card-header px-6 py-4 border-b">
+       <h1 class="text-xl sm:text-2xl font-semibold section-title">
+        Email Verification
+       </h1>
+      </div>
+      <div class="px-6 py-6 space-y-5">
+       <!-- Loading State -->
+       <div class="hidden" id="loadingState">
+        <div class="flex items-center gap-4">
+         <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+          <i class="fa-solid fa-spinner animate-spin text-[#0000FF]">
+          </i>
+         </span>
+         <div>
+          <p class="text-gray-700">
+           Validating your verification link...
+          </p>
+          <p class="text-sm text-gray-500">
+           Please wait a moment.
+          </p>
+         </div>
+        </div>
+       </div>
+       <!-- Pending Verification View -->
+       <div class="space-y-4" id="pendingView">
+        <div class="flex items-center gap-4">
+         <span class="status-icon-shadow inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+          <i class="fa-solid fa-envelope-open-text text-[#0000FF] text-xl">
+          </i>
+         </span>
+         <h2 class="text-2xl font-semibold">
+          Verify Your Account
+         </h2>
+        </div>
+        <p class="text-gray-700 leading-relaxed" id="pendingInstruction">
+         A verification link has been sent to
+         <span class="font-medium text-gray-900" id="userEmailText">
+         </span>
+         . Please check your inbox and spam folder to activate your account.
+        </p>
+        <div class="flex items-center gap-3">
+         <button class="text-[#0000FF] hover:text-[#1d4ed8] underline" id="resendBtn" title="Resend verification email">
+          Didn't receive the email? Resend
+         </button>
+         <span class="hidden inline-flex items-center px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700 countdown-badge" id="resendCountdown">
+          60s
+         </span>
+        </div>
+        <div class="flex items-center gap-4">
+         <button class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/90" id="narrateBtn" title="Narrate this message">
+          <i class="fa-solid fa-volume-high">
+          </i>
+          <span>
+           Narrate Status
+          </span>
+         </button>
+         <a class="inline-flex items-center gap-2 px-3 py-2 rounded-md btn-outline border text-[#2563eb] border-[#2563eb] hover:bg-[#2563eb] hover:text-white" href="./login_page.html" title="Go to login">
+          <i class="fa-solid fa-right-to-bracket">
+          </i>
+          <span>
+           Go to Login
+          </span>
+         </a>
+        </div>
+       </div>
+       <!-- Verification Result View -->
+       <div class="hidden space-y-4" id="resultView">
+        <div class="flex items-center gap-4">
+         <span class="status-icon-shadow inline-flex h-12 w-12 items-center justify-center rounded-full" id="resultIconWrap">
+          <!-- Icon injected by JS based on success or failure -->
+         </span>
+         <h2 class="text-2xl font-semibold" id="resultHeader">
+         </h2>
+        </div>
+        <p class="text-gray-700 leading-relaxed" id="resultMessage">
+        </p>
+        <div class="flex items-center gap-4" id="resultCTA">
+         <!-- CTA injected based on success/failure -->
+        </div>
+       </div>
+       <!-- System Notifications Area (toggle to view) -->
+       <div class="mt-4">
+        <button class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-gray-300 hover:bg-gray-50" id="notifToggle" title="Show notifications">
+         <i class="fa-solid fa-bell text-[#008080]">
+         </i>
+         <span>
+          Notifications
+         </span>
+        </button>
+       </div>
+      </div>
+      <div class="card-footer px-6 py-4 border-t text-sm text-gray-600">
+       Having trouble? Visit
+       <a class="text-[#0000FF] hover:text-[#1d4ed8] underline" href="./about_page.html">
+        Help &amp; About
+       </a>
+       or contact support.
+      </div>
+     </div>
+    </section>
+   </div>
+  </main>
+  <!-- Notification Panel (slides from right) -->
+  <aside class="notif-panel fixed top-16 right-0 z-40 w-80 h-[calc(100vh-64px)] bg-white border-l border-gray-200 shadow-lg overflow-y-auto" id="notificationPanel">
+   <div class="p-4">
+    <div class="flex items-center justify-between">
+     <h3 class="text-lg font-semibold">
+      Alerts &amp; Reminders
+     </h3>
+     <button class="inline-flex h-8 w-8 items-center justify-center rounded hover:bg-gray-100" id="notifClose" title="Close">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <div class="mt-4 space-y-3">
+     <div class="alert-info border rounded p-3">
+      <div class="flex items-start gap-3">
+       <i class="fa-solid fa-info-circle text-[#0ea5e9]">
+       </i>
+       <div>
+        <p class="font-medium">
+         Verification Email Sent
+        </p>
+        <p class="text-sm">
+         A new verification email was sent to your inbox.
+        </p>
+       </div>
+      </div>
+     </div>
+     <div class="alert-warning border rounded p-3">
+      <div class="flex items-start gap-3">
+       <i class="fa-solid fa-triangle-exclamation text-[#f59e0b]">
+       </i>
+       <div>
+        <p class="font-medium">
+         Link may expire
+        </p>
+        <p class="text-sm">
+         Verification links expire for security. Please verify soon.
+        </p>
+       </div>
+      </div>
+     </div>
+     <div class="alert-success border rounded p-3">
+      <div class="flex items-start gap-3">
+       <i class="fa-solid fa-circle-check text-[#16a34a]">
+       </i>
+       <div>
+        <p class="font-medium">
+         Account Activated
+        </p>
+        <p class="text-sm">
+         You can now log in and access your dashboard.
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </aside>
+  <!-- Help Assistant (floating bottom-right, slide-up) -->
+  <div class="fixed bottom-4 right-4 z-40">
+   <button class="inline-flex items-center gap-2 px-4 py-3 rounded-full shadow bg-[#008080] text-white hover:bg-[#008080]/90" id="helpToggle">
+    <i class="fa-solid fa-life-ring">
+    </i>
+    <span>
+     Help
+    </span>
+   </button>
+   <div class="help-panel mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden" id="helpPanel">
+    <div class="p-4">
+     <div class="flex items-center justify-between">
+      <h4 class="font-semibold">
+       Need Assistance?
+      </h4>
+      <button class="inline-flex h-8 w-8 items-center justify-center rounded hover:bg-gray-100" id="helpClose" title="Close">
+       <i class="fa-solid fa-xmark">
+       </i>
+      </button>
+     </div>
+     <p class="mt-2 text-sm text-gray-700">
+      Here are some quick tips:
+     </p>
+     <ul class="mt-2 space-y-2 text-sm text-gray-700 list-disc pl-5">
+      <li>
+       Check your spam folder for the verification email.
+      </li>
+      <li>
+       Click the link within the email to activate your account.
+      </li>
+      <li>
+       If expired, request a new email using the Resend button.
+      </li>
+     </ul>
+     <div class="mt-3 flex items-center gap-2">
+      <a class="text-[#0000FF] hover:text-[#1d4ed8] underline" href="./about_page.html">
+       Help &amp; About
+      </a>
+      <a class="text-[#0000FF] hover:text-[#1d4ed8] underline" href="./home_page.html">
+       Home
+      </a>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- Common Auth Footer -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      © 2025 AI-Health Corp.
+     </span>
+    </div>
+    <div class="flex items-center gap-6">
+     <a class="hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      Terms
+     </a>
+     <a class="hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      Privacy
+     </a>
+    </div>
+   </div>
+  </footer>
+  <script>
+   // Helper: get query params
+function getParam(name) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+}
+
+// Accessibility mode toggle
+const accessibilityToggle = document.getElementById('accessibilityToggle');
+accessibilityToggle?.addEventListener('click', () => {
+    document.body.classList.toggle('accessibility-mode');
+});
+
+// Notification panel toggle
+const notifToggle = document.getElementById('notifToggle');
+const notificationPanel = document.getElementById('notificationPanel');
+const notifClose = document.getElementById('notifClose');
+notifToggle?.addEventListener('click', () => notificationPanel.classList.add('open'));
+notifClose?.addEventListener('click', () => notificationPanel.classList.remove('open'));
+
+// Help assistant toggle
+const helpToggle = document.getElementById('helpToggle');
+const helpPanel = document.getElementById('helpPanel');
+const helpClose = document.getElementById('helpClose');
+helpToggle?.addEventListener('click', () => helpPanel.classList.add('open'));
+helpClose?.addEventListener('click', () => helpPanel.classList.remove('open'));
+
+// Elements
+const loadingState = document.getElementById('loadingState');
+const pendingView = document.getElementById('pendingView');
+const resultView = document.getElementById('resultView');
+const userEmailText = document.getElementById('userEmailText');
+const pendingInstruction = document.getElementById('pendingInstruction');
+const resendBtn = document.getElementById('resendBtn');
+const resendCountdown = document.getElementById('resendCountdown');
+const narrateBtn = document.getElementById('narrateBtn');
+const resultIconWrap = document.getElementById('resultIconWrap');
+const resultHeader = document.getElementById('resultHeader');
+const resultMessage = document.getElementById('resultMessage');
+const resultCTA = document.getElementById('resultCTA');
+
+// Simulated API calls
+function mockVerifyToken(token) {
+    // Simulate network delay and result
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const successTokens = ['success', 'valid', 'ok'];
+            resolve({
+                success: successTokens.includes((token || '').toLowerCase())
+            });
+        }, 1200);
+    });
+}
+
+function mockResendVerification(email) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            // Simulate 85% success rate
+            Math.random() < 0.85 ? resolve({
+                sent: true
+            }) : reject(new Error('Failed to send email'));
+        }, 800);
+    });
+}
+
+// Initialize email from query or localStorage
+const emailParam = getParam('email');
+const storedEmail = localStorage.getItem('pendingUserEmail');
+const userEmail = emailParam || storedEmail || 'your email address';
+userEmailText.textContent = userEmail;
+
+// Determine state based on token param
+const token = getParam('token');
+if (token) {
+    // Show loading then result
+    pendingView.classList.add('hidden');
+    loadingState.classList.remove('hidden');
+    resultView.classList.add('hidden');
+    mockVerifyToken(token).then(({
+        success
+    }) => {
+        loadingState.classList.add('hidden');
+        resultView.classList.remove('hidden');
+        if (success) {
+            // Success UI
+            resultIconWrap.className = 'status-icon-shadow inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100';
+            resultIconWrap.innerHTML = '<i class="fa-solid fa-circle-check text-green-600 text-xl"></i>';
+            resultHeader.textContent = 'Account Activated!';
+            resultMessage.textContent = 'Your email has been successfully verified. You can now log in.';
+            resultCTA.innerHTML = '<a href="./login_page.html" class="cta-btn inline-flex items-center gap-2 px-4 py-2 rounded-md btn-primary hover:bg-[#1d4ed8]"><i class="fa-solid fa-right-to-bracket"></i><span>Go to Login</span></a>';
+            Swal.fire({
+                icon: 'success',
+                title: 'Verified',
+                text: 'Your account is now active. Welcome!',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        } else {
+            // Failure UI
+            resultIconWrap.className = 'status-icon-shadow inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-100';
+            resultIconWrap.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-600 text-xl"></i>';
+            resultHeader.textContent = 'Verification Failed';
+            resultMessage.textContent = 'The verification link is invalid or has expired. Please try again or request a new one.';
+            resultCTA.innerHTML = '<button id="failedResendBtn" class="cta-btn inline-flex items-center gap-2 px-4 py-2 rounded-md btn-primary"><i class="fa-solid fa-paper-plane"></i><span>Resend Verification Email</span></button>';
+            Swal.fire({
+                icon: 'error',
+                title: 'Verification Failed',
+                text: 'The link may be invalid or expired. You can request a new email.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            // Attach resend handler for failure
+            const failedResendBtn = document.getElementById('failedResendBtn');
+            failedResendBtn?.addEventListener('click', () => handleResend());
+        }
+    });
+} else {
+    // Pending view visible
+    pendingView.classList.remove('hidden');
+    loadingState.classList.add('hidden');
+    resultView.classList.add('hidden');
+}
+
+// Resend logic with 60s cooldown
+let cooldown = 0; // seconds
+let cooldownTimer = null;
+
+function startCooldown() {
+    cooldown = 60;
+    resendCountdown.textContent = cooldown + 's';
+    resendCountdown.classList.remove('hidden');
+    resendBtn.disabled = true;
+    resendBtn.classList.add('opacity-60', 'cursor-not-allowed');
+    cooldownTimer = setInterval(() => {
+        cooldown -= 1;
+        resendCountdown.textContent = (cooldown > 0 ? cooldown : 0) + 's';
+        if (cooldown <= 0) {
+            clearInterval(cooldownTimer);
+            resendCountdown.classList.add('hidden');
+            resendBtn.disabled = false;
+            resendBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+        }
+    }, 1000);
+}
+
+async function handleResend() {
+    try {
+        await mockResendVerification(userEmail);
+        Swal.fire({
+            icon: 'success',
+            title: 'New email sent',
+            text: 'A fresh verification email has been sent to ' + userEmail + '.',
+            timer: 2500,
+            showConfirmButton: false
+        });
+        startCooldown();
+    } catch (e) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Sending failed',
+            text: 'Please try again in a moment.',
+            timer: 2500,
+            showConfirmButton: false
+        });
+    }
+}
+
+resendBtn?.addEventListener('click', () => {
+    if (!resendBtn.disabled) handleResend();
+});
+
+// Voice narration option
+narrateBtn?.addEventListener('click', () => {
+    const text = 'A verification link has been sent to ' + userEmail + '. Please check your inbox and spam folder to activate your account.';
+    if ('speechSynthesis' in window) {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1.0;
+        utter.pitch = 1.0;
+        utter.lang = 'en-US';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+    } else {
+        Swal.fire({
+            icon: 'info',
+            title: 'Voice not supported',
+            text: 'Your browser does not support voice narration.'
+        });
+    }
+});
+
+// Fallback image example usage (not displayed on this page but provided for context)
+// const img = new Image(); img.src = 'https://picsum.photos/id/237/200/300'; img.onerror = () => { img.src = 'https://picsum.photos/seed/fallback/200/300'; };
+  </script>
+ </body>
+</html>

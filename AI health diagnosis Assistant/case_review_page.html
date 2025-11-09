@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Case Review Page
+  </title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <link href="style.css" rel="stylesheet">
+   <link href="case_review_page.css" rel="stylesheet"/>
+   <script src="https://cdn.tailwindcss.com">
+   </script>
+   <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" referrerpolicy="no-referrer" rel="stylesheet"/>
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+   </script>
+   <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+   </script>
+   <style>
+    :root { --app-accent: #0000FF; --app-teal: #008080; }
+    body { font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+   </style>
+  </link>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="bg-gray-50 text-gray-800">
+  <!-- Header (common component) -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <div class="flex items-center gap-3">
+      <button class="md:hidden inline-flex items-center px-2 py-2 rounded-md bg-white/20" id="sidebarToggle">
+       <i class="fa-solid fa-bars">
+       </i>
+      </button>
+      <a class="flex items-center gap-2" href="./doctor_dashboard.html">
+       <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+        <i class="fa-solid fa-heart-pulse">
+        </i>
+       </span>
+       <span class="font-semibold tracking-wide">
+        Doctor Portal
+       </span>
+      </a>
+     </div>
+     <div class="hidden md:flex items-center gap-4 flex-1 justify-center">
+      <div class="w-full max-w-lg relative">
+       <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/70">
+       </i>
+       <input class="w-full pl-9 pr-3 py-2 rounded-md bg-white/20 placeholder-white/70 focus:bg-white/30 focus:outline-none" placeholder="Search cases (ID, patient name, status)..." type="search"/>
+      </div>
+     </div>
+     <div class="flex items-center gap-2">
+      <a class="hidden sm:inline-flex px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./doctor_dashboard.html#pending">
+       Go to Queue
+      </a>
+      <button aria-label="Notifications" class="p-2 rounded-md hover:bg-white/20" id="openNotificationsBtn" title="Open notifications">
+       <i class="fa-regular fa-bell">
+       </i>
+      </button>
+      <button aria-label="Messages" class="p-2 rounded-md hover:bg-white/20">
+       <i class="fa-regular fa-envelope">
+       </i>
+      </button>
+      <div class="relative">
+       <button class="inline-flex items-center gap-2 px-2 py-2 rounded-md hover:bg-white/20" id="profileMenuBtn">
+        <i class="fa-regular fa-user">
+        </i>
+        <span class="hidden sm:inline">
+         Profile
+        </span>
+        <i class="fa-solid fa-chevron-down text-xs">
+        </i>
+       </button>
+       <div class="absolute right-0 mt-2 w-44 bg-white text-gray-700 rounded-md shadow-lg overflow-hidden hidden" id="profileMenu">
+        <a class="block px-4 py-2 hover:bg-gray-100" href="./settings_page.html">
+         Settings
+        </a>
+        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='./login_page.html'">
+         Logout
+        </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+    const pb = document.getElementById('profileMenuBtn');
+    const pm = document.getElementById('profileMenu');
+    if (pb && pm) {
+        pb.addEventListener('click', () => pm.classList.toggle('hidden'));
+    }
+    document.addEventListener('click', (e) => {
+        const pm = document.getElementById('profileMenu');
+        const pb = document.getElementById('profileMenuBtn');
+        if (pm && !pm.classList.contains('hidden') && !pb.contains(e.target) && !pm.contains(e.target)) {
+            pm.classList.add('hidden');
+        }
+    });
+})();
+   </script>
+  </header>
+  <!-- Sidebar (common component) -->
+  <aside class="mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 text-gray-700">
+    <p class="px-3 pb-2 text-xs uppercase tracking-wide text-gray-500">
+     Queue
+    </p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./doctor_dashboard.html">
+     <i class="fa-solid fa-gauge text-[#008080]">
+     </i>
+     <span>
+      Dashboard
+     </span>
+    </a>
+    <details class="group mt-2" open="">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-clipboard-list text-[#008080]">
+      </i>
+      <span>
+       Cases
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#pending">
+       Pending Review
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#confirmed">
+       Confirmed
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#rejected">
+       Rejected
+      </a>
+      <a class="block px-3 py-1 rounded-md bg-[#0000FF]/10 text-[#0000FF] font-medium" href="./case_review_page.html">
+       Review Case
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./case_details_page.html">
+       Case Details
+      </a>
+     </div>
+    </details>
+    <div class="mt-4 border-t pt-4">
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./settings_page.html">
+      <i class="fa-solid fa-gear text-[#008080]">
+      </i>
+      <span>
+       Settings
+      </span>
+     </a>
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./about_page.html">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span>
+       Support
+      </span>
+     </a>
+    </div>
+   </nav>
+  </aside>
+  <!-- Main Content -->
+  <main class="pt-16 md:ml-64 min-h-screen">
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Breadcrumb / Page Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+     <div class="flex items-center gap-3">
+      <a class="inline-flex items-center gap-2 text-[#008080] hover:underline" href="./doctor_dashboard.html" title="Back to dashboard">
+       <i class="fa-solid fa-arrow-left">
+       </i>
+       <span>
+        Back to Dashboard
+       </span>
+      </a>
+      <span class="hidden sm:block text-gray-300">
+       |
+      </span>
+      <h1 class="text-2xl font-semibold text-gray-800">
+       Case Review
+      </h1>
+     </div>
+     <div class="flex items-center gap-2">
+      <button class="px-3 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800" id="accessibilityToggle" title="Toggle accessibility mode">
+       <i class="fa-solid fa-universal-access mr-2">
+       </i>
+       Accessibility
+      </button>
+      <button class="px-3 py-2 rounded-md bg-[#0000FF] text-white hover:bg-[#0000FF]/90" id="startCoach" title="Show tips">
+       <i class="fa-solid fa-circle-question mr-2">
+       </i>
+       Tips
+      </button>
+     </div>
+    </div>
+    <!-- Case Header Card -->
+    <div class="mt-4 card rounded-lg border border-gray-200 bg-white shadow-sm">
+     <div class="card-header flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b">
+      <div class="flex items-center gap-4">
+       <img alt="Patient avatar" class="h-12 w-12 rounded-full object-cover border" id="patientAvatar" onerror="this.onerror=null;this.src='https://picsum.photos/id/237/64/64'" src="https://picsum.photos/seed/patient/64/64"/>
+       <div>
+        <h2 class="text-lg font-semibold text-gray-800" id="caseTitle">
+         Case #—
+        </h2>
+        <p class="text-sm text-gray-600" id="patientSub">
+         Loading patient details…
+        </p>
+       </div>
+      </div>
+      <div class="flex items-center gap-2">
+       <span class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full text-sm bg-gray-100 text-gray-700" id="urgencyBadge" title="AI-assessed urgency">
+        <i class="fa-solid fa-triangle-exclamation">
+        </i>
+        <span>
+         Loading...
+        </span>
+       </span>
+       <a class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-800" href="./case_details_page.html" title="Open case details">
+        Details
+       </a>
+      </div>
+     </div>
+    </div>
+    <!-- Layout: Left 40% (Patient Info) | Right 60% (AI + Doctor form) -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mt-6">
+     <!-- Left Column: Patient Information Panel -->
+     <aside class="md:col-span-2 space-y-6">
+      <div class="card rounded-lg border border-gray-200 bg-white shadow-sm">
+       <div class="card-header px-4 py-3 border-b bg-gray-50">
+        <h3 class="text-base font-semibold text-gray-800">
+         Patient Information
+        </h3>
+       </div>
+       <div class="p-4">
+        <!-- Patient Details Header -->
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm" id="patientDetails">
+         <!-- Populated by JS -->
+         <div class="animate-pulse h-4 bg-gray-100 rounded col-span-1">
+         </div>
+         <div class="animate-pulse h-4 bg-gray-100 rounded col-span-1">
+         </div>
+         <div class="animate-pulse h-4 bg-gray-100 rounded col-span-1">
+         </div>
+         <div class="animate-pulse h-4 bg-gray-100 rounded col-span-1">
+         </div>
+        </dl>
+        <!-- Symptom Summary -->
+        <div class="mt-6">
+         <h4 class="text-sm font-medium text-gray-700 mb-2">
+          Symptom Summary
+         </h4>
+         <ul class="space-y-2 text-sm" id="symptomList">
+          <li class="animate-pulse h-4 bg-gray-100 rounded">
+          </li>
+          <li class="animate-pulse h-4 bg-gray-100 rounded">
+          </li>
+          <li class="animate-pulse h-4 bg-gray-100 rounded">
+          </li>
+         </ul>
+        </div>
+        <!-- Uploaded Documents -->
+        <div class="mt-6">
+         <h4 class="text-sm font-medium text-gray-700 mb-2">
+          Uploaded Documents
+         </h4>
+         <div class="overflow-hidden border rounded-md">
+          <table class="min-w-full text-sm">
+           <thead class="bg-gray-50 text-gray-700">
+            <tr>
+             <th class="text-left px-3 py-2 font-medium">
+              Filename
+             </th>
+             <th class="text-left px-3 py-2 font-medium">
+              Type
+             </th>
+             <th class="text-left px-3 py-2 font-medium">
+              Uploaded
+             </th>
+             <th class="text-right px-3 py-2 font-medium">
+              Size
+             </th>
+            </tr>
+           </thead>
+           <tbody class="divide-y" id="docsTbody">
+            <tr>
+             <td class="px-3 py-2" colspan="4">
+              <div class="animate-pulse h-4 bg-gray-100 rounded">
+              </div>
+             </td>
+            </tr>
+           </tbody>
+          </table>
+         </div>
+        </div>
+       </div>
+      </div>
+     </aside>
+     <!-- Right Column: AI Analysis Panel + Doctor Review Form -->
+     <section class="md:col-span-3 space-y-6">
+      <!-- AI Analysis Panel -->
+      <div class="card rounded-lg border border-gray-200 bg-white shadow-sm">
+       <div class="card-header px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800">
+         AI Analysis
+        </h3>
+        <div class="flex items-center gap-2">
+         <button class="px-2 py-1.5 rounded-md text-sm bg-blue-50 text-blue-700 hover:bg-blue-100" id="narrateBtn" title="Play narration">
+          <i class="fa-solid fa-volume-high mr-1">
+          </i>
+          Narrate
+         </button>
+        </div>
+       </div>
+       <div class="p-4 space-y-4">
+        <!-- Disclaimer -->
+        <div class="rounded-md border border-blue-300 bg-blue-50 text-blue-800 px-3 py-2 text-sm">
+         <i class="fa-solid fa-circle-info mr-2">
+         </i>
+         AI analysis is a suggestion and is not a final diagnosis. Please review before confirming.
+        </div>
+        <!-- Filter and Sort Controls -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 justify-between">
+         <div class="relative w-full sm:w-64">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          </i>
+          <input class="w-full pl-9 pr-3 py-2 border rounded-md" id="diagnosisFilter" placeholder="Filter by condition..." type="text"/>
+         </div>
+         <div class="text-sm text-gray-600">
+          Sort by:
+          <button class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100" id="sortByConfidence">
+           Confidence
+           <i class="fa-solid fa-arrow-down-wide-short text-gray-500" id="confidenceSortIcon">
+           </i>
+          </button>
+         </div>
+        </div>
+        <!-- Diagnoses Table -->
+        <div class="overflow-hidden border rounded-md">
+         <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-gray-700">
+           <tr>
+            <th class="text-left px-3 py-2 font-medium">
+             Condition
+            </th>
+            <th class="text-left px-3 py-2 font-medium">
+             Confidence Score
+            </th>
+            <th class="text-left px-3 py-2 font-medium">
+             Explanation
+            </th>
+           </tr>
+          </thead>
+          <tbody class="divide-y" id="diagnosesTbody">
+           <!-- Rows injected by JS -->
+           <tr>
+            <td class="px-3 py-2" colspan="3">
+             <div class="animate-pulse h-4 bg-gray-100 rounded">
+             </div>
+            </td>
+           </tr>
+          </tbody>
+         </table>
+         <div class="flex items-center justify-between p-3 text-xs text-gray-600">
+          <div id="diagPaginationInfo">
+           Page 1 of 1
+          </div>
+          <div class="flex items-center gap-1">
+           <button class="px-2 py-1 rounded border text-gray-700" disabled="">
+            Prev
+           </button>
+           <button class="px-2 py-1 rounded border bg-[#0000FF] text-white">
+            1
+           </button>
+           <button class="px-2 py-1 rounded border text-gray-700" disabled="">
+            Next
+           </button>
+          </div>
+         </div>
+        </div>
+        <!-- Confidence Chart -->
+        <div class="mt-2">
+         <h4 class="text-sm font-medium text-gray-700 mb-2">
+          Confidence by Condition
+         </h4>
+         <div class="w-full" id="confidenceChart" style="min-height: 280px;">
+         </div>
+        </div>
+       </div>
+      </div>
+      <!-- Doctor Review Form -->
+      <form class="card rounded-lg border border-gray-200 bg-white shadow-sm" id="doctorReviewForm" novalidate="">
+       <div class="card-header px-4 py-3 border-b bg-gray-50">
+        <h3 class="text-base font-semibold text-gray-800">
+         Doctor Review
+        </h3>
+       </div>
+       <div class="p-4 space-y-4">
+        <!-- Decision Buttons -->
+        <div aria-label="Diagnosis decision" class="flex flex-wrap gap-2" role="radiogroup">
+         <button class="decision-btn inline-flex items-center gap-2 px-3 py-2 rounded-md border text-gray-800 hover:bg-green-50" data-decision="Confirm" title="Confirm AI suggestion" type="button">
+          <i class="fa-solid fa-check text-green-600">
+          </i>
+          Confirm
+         </button>
+         <button class="decision-btn inline-flex items-center gap-2 px-3 py-2 rounded-md border text-gray-800 hover:bg-red-50" data-decision="Reject" title="Reject AI suggestion" type="button">
+          <i class="fa-solid fa-xmark text-red-600">
+          </i>
+          Reject
+         </button>
+         <button class="decision-btn inline-flex items-center gap-2 px-3 py-2 rounded-md border text-gray-800 hover:bg-blue-50" data-decision="Needs More Info" title="Request more info" type="button">
+          <i class="fa-solid fa-circle-question text-blue-600">
+          </i>
+          Needs More Info
+         </button>
+        </div>
+        <!-- Notes -->
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1" for="notes">
+          Professional Notes
+         </label>
+         <textarea class="w-full rounded-md border px-3 py-2" id="notes" placeholder="Enter your professional notes and recommendations for the patient..." rows="8"></textarea>
+         <p class="mt-1 text-xs text-gray-500" id="notesHelp">
+          Notes are required when rejecting or requesting more info.
+         </p>
+        </div>
+        <!-- Form Actions -->
+        <div class="flex items-center justify-between gap-3 pt-2">
+         <div class="text-xs text-gray-500">
+          Submitting updates the case status and notifies the patient.
+         </div>
+         <div class="flex items-center gap-2">
+          <a class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200" href="./doctor_dashboard.html">
+           Cancel
+          </a>
+          <button class="px-4 py-2 rounded-md bg-gray-300 text-gray-600 cursor-not-allowed" disabled="" id="submitReview" type="submit">
+           <i class="fa-solid fa-paper-plane mr-2">
+           </i>
+           Submit Review
+          </button>
+         </div>
+        </div>
+       </div>
+      </form>
+     </section>
+    </div>
+   </section>
+  </main>
+  <!-- Notification Panel (slides from right) -->
+  <aside class="fixed top-16 right-0 w-full sm:w-96 max-w-full h-[calc(100vh-64px)] bg-white border-l border-gray-200 shadow-xl translate-x-full transition-transform duration-300 z-40 overflow-y-auto" id="notificationPanel">
+   <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+    <h3 class="text-base font-semibold text-gray-800">
+     <i class="fa-regular fa-bell mr-2 text-[#008080]">
+     </i>
+     Notifications
+    </h3>
+    <button aria-label="Close notifications" class="p-2 hover:bg-gray-200 rounded" id="closeNotificationsBtn">
+     <i class="fa-solid fa-xmark">
+     </i>
+    </button>
+   </div>
+   <div class="p-4 space-y-3 text-sm">
+    <div class="flex items-start gap-3 p-3 rounded-md border bg-blue-50 border-blue-200 text-blue-800">
+     <i class="fa-solid fa-circle-info mt-0.5">
+     </i>
+     <div>
+      <p>
+       AI analysis updated for Case
+       <span class="font-medium">
+        #CASE-2025-00123
+       </span>
+       .
+      </p>
+      <p class="text-xs text-blue-700">
+       2 hours ago
+      </p>
+     </div>
+    </div>
+    <div class="flex items-start gap-3 p-3 rounded-md border bg-yellow-50 border-yellow-200 text-yellow-800">
+     <i class="fa-solid fa-triangle-exclamation mt-0.5">
+     </i>
+     <div>
+      <p>
+       Pending patient clarification on medication history.
+      </p>
+      <p class="text-xs text-yellow-700">
+       Yesterday
+      </p>
+     </div>
+    </div>
+    <div class="flex items-start gap-3 p-3 rounded-md border bg-green-50 border-green-200 text-green-800">
+     <i class="fa-solid fa-check mt-0.5">
+     </i>
+     <div>
+      <p>
+       Lab results attached successfully.
+      </p>
+      <p class="text-xs text-green-700">
+       2 days ago
+      </p>
+     </div>
+    </div>
+   </div>
+  </aside>
+  <!-- Help Assistant (floating) -->
+  <div class="fixed bottom-6 right-6 z-40">
+   <div class="hidden mb-3 w-80 max-w-[90vw] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden animate-slide-up" id="helpPanel">
+    <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+     <div class="flex items-center gap-2">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span class="font-medium">
+       Help Assistant
+      </span>
+     </div>
+     <button aria-label="Close help" class="p-2 hover:bg-gray-200 rounded" id="closeHelp">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <div class="p-4 text-sm space-y-3">
+     <p>
+      Welcome! Need guidance reviewing a case? Start a quick tour or ask for tips.
+     </p>
+     <button class="w-full px-3 py-2 rounded-md bg-[#0000FF] text-white hover:bg-[#0000FF]/90" id="helpTourBtn">
+      <i class="fa-solid fa-route mr-2">
+      </i>
+      Start Tour
+     </button>
+     <a class="inline-flex items-center text-[#008080] hover:underline" href="./about_page.html">
+      <i class="fa-solid fa-life-ring mr-2">
+      </i>
+      Support
+     </a>
+    </div>
+   </div>
+   <button aria-label="Open help" class="h-12 w-12 rounded-full bg-[#0000FF] text-white shadow-lg flex items-center justify-center hover:bg-[#0000FF]/90" id="helpFab">
+    <i class="fa-solid fa-message-question">
+    </i>
+   </button>
+  </div>
+  <!-- Footer (common component) -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      Doctor Portal
+     </span>
+    </div>
+    <div class="flex items-center gap-4">
+     <a class="px-3 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/80 text-sm" href="./doctor_dashboard.html#pending">
+      View Pending
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      Terms
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      Privacy
+     </a>
+    </div>
+   </div>
+  </footer>
+  <script>
+   // Accessibility mode toggle: increases font size and contrast for better readability
+(function() {
+    const toggle = document.getElementById('accessibilityToggle');
+    toggle?.addEventListener('click', () => {
+        document.body.classList.toggle('accessibility-mode');
+        Swal.fire({
+            toast: true,
+            position: 'bottom',
+            timer: 1800,
+            showConfirmButton: false,
+            icon: 'success',
+            title: document.body.classList.contains('accessibility-mode') ? 'Accessibility mode ON' : 'Accessibility mode OFF'
+        });
+    });
+})();
+
+// Notifications panel toggle
+(function() {
+    const openBtn = document.getElementById('openNotificationsBtn');
+    const panel = document.getElementById('notificationPanel');
+    const closeBtn = document.getElementById('closeNotificationsBtn');
+    const open = () => panel.classList.remove('translate-x-full');
+    const close = () => panel.classList.add('translate-x-full');
+    openBtn?.addEventListener('click', open);
+    closeBtn?.addEventListener('click', close);
+})();
+
+// Help assistant
+(function() {
+    const fab = document.getElementById('helpFab');
+    const panel = document.getElementById('helpPanel');
+    const close = document.getElementById('closeHelp');
+    fab?.addEventListener('click', () => panel.classList.toggle('hidden'));
+    close?.addEventListener('click', () => panel.classList.add('hidden'));
+    document.getElementById('helpTourBtn')?.addEventListener('click', () => startCoach());
+    document.getElementById('startCoach')?.addEventListener('click', () => startCoach());
+})();
+
+// Simple Coach Marks using SweetAlert2 queue
+function startCoach() {
+    const steps = [{
+        title: 'Case Header',
+        text: 'See case ID, patient context, and AI urgency badge here.'
+    }, {
+        title: 'Patient Info',
+        text: 'Review patient details, symptom summary, and uploaded documents.'
+    }, {
+        title: 'AI Analysis',
+        text: 'Filter, sort, and examine the AI-generated potential diagnoses.'
+    }, {
+        title: 'Doctor Review',
+        text: 'Choose a decision, add professional notes, and submit your review.'
+    }];
+    let i = 0;
+    const next = () => {
+        if (i >= steps.length) {
+            Swal.close();
+            return;
+        }
+        const s = steps[i++];
+        Swal.fire({
+            title: s.title,
+            text: s.text,
+            icon: 'info',
+            confirmButtonText: i < steps.length ? 'Next' : 'Finish'
+        }).then(next);
+    };
+    next();
+}
+
+// Mock Data & Loading
+const state = {
+    caseId: new URLSearchParams(location.search).get('caseId') || 'CASE-2025-00123',
+    isLoading: true,
+    error: null,
+    caseData: null,
+    ai: null,
+    sortDesc: true,
+    filter: ''
+};
+
+const mockPatient = {
+    name: 'Alex Johnson',
+    age: 46,
+    gender: 'Male',
+    dob: '1979-02-11',
+    allergies: 'Penicillin',
+    conditions: 'Hypertension',
+    medications: 'Lisinopril',
+    lastVisit: '2024-12-15'
+};
+
+const mockSymptoms = [{
+    q: 'Primary complaint',
+    a: 'Chest discomfort and shortness of breath'
+}, {
+    q: 'Duration',
+    a: '3 days, intermittent'
+}, {
+    q: 'Pain scale (0-10)',
+    a: '6'
+}, {
+    q: 'Triggers',
+    a: 'Exertion and stress'
+}, {
+    q: 'Relief factors',
+    a: 'Rest'
+}];
+
+const mockDocs = [{
+    name: 'ECG_2025_01.pdf',
+    type: 'PDF',
+    uploaded: '2025-01-10',
+    size: '450 KB',
+    url: 'https://example.com/secure/ecg?token=abc'
+}, {
+    name: 'Bloodwork_Results.pdf',
+    type: 'PDF',
+    uploaded: '2025-01-09',
+    size: '310 KB',
+    url: 'https://example.com/secure/bw?token=def'
+}, {
+    name: 'Chest_Xray.png',
+    type: 'Image',
+    uploaded: '2025-01-08',
+    size: '1.2 MB',
+    url: 'https://example.com/secure/cxr?token=ghi'
+}];
+
+const mockAI = {
+    urgency: 'Medium', // Low | Medium | High
+    list: [{
+        condition: 'Stable Angina',
+        score: 0.82,
+        explanation: 'Symptoms triggered by exertion; ECG shows ST depression.'
+    }, {
+        condition: 'Gastroesophageal Reflux',
+        score: 0.33,
+        explanation: 'Chest discomfort could be non-cardiac; symptom overlap noted.'
+    }, {
+        condition: 'Costochondritis',
+        score: 0.28,
+        explanation: 'Localized chest wall tenderness reported.'
+    }, {
+        condition: 'Anxiety-related symptoms',
+        score: 0.24,
+        explanation: 'Stress-related episodes, normal troponins.'
+    }, {
+        condition: 'Acute Coronary Syndrome',
+        score: 0.12,
+        explanation: 'Low probability; troponins negative and pain not persistent.'
+    }, {
+        condition: 'Pneumonia',
+        score: 0.08,
+        explanation: 'CXR shows no consolidation; low suspicion.'
+    }]
+};
+
+function fmtScore(n) {
+    return (n * 100).toFixed(1) + '%';
+}
+
+function setUrgencyBadge(level) {
+    const badge = document.getElementById('urgencyBadge');
+    if (!badge) return;
+    badge.className = 'inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full text-sm';
+    let cls = 'bg-gray-100 text-gray-700';
+    if (level === 'Low') cls = 'bg-green-50 text-green-700';
+    if (level === 'Medium') cls = 'bg-yellow-50 text-yellow-800';
+    if (level === 'High') cls = 'bg-red-50 text-red-700';
+    badge.className += ' ' + cls;
+    badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>${level} Urgency</span>`;
+}
+
+function renderPatient() {
+    document.getElementById('caseTitle').textContent = `Case #${state.caseId}`;
+    document.getElementById('patientSub').textContent = `${mockPatient.name} • ${mockPatient.age} • ${mockPatient.gender}`;
+    const dl = document.getElementById('patientDetails');
+    dl.innerHTML = `
+        <div><dt class='text-gray-500'>Name</dt><dd class='font-medium text-gray-800'>${mockPatient.name}</dd></div>
+        <div><dt class='text-gray-500'>Age</dt><dd class='font-medium text-gray-800'>${mockPatient.age}</dd></div>
+        <div><dt class='text-gray-500'>Gender</dt><dd class='font-medium text-gray-800'>${mockPatient.gender}</dd></div>
+        <div><dt class='text-gray-500'>Date of Birth</dt><dd class='font-medium text-gray-800'>${mockPatient.dob}</dd></div>
+        <div><dt class='text-gray-500'>Allergies</dt><dd class='font-medium text-gray-800'>${mockPatient.allergies}</dd></div>
+        <div><dt class='text-gray-500'>Conditions</dt><dd class='font-medium text-gray-800'>${mockPatient.conditions}</dd></div>
+        <div><dt class='text-gray-500'>Medications</dt><dd class='font-medium text-gray-800'>${mockPatient.medications}</dd></div>
+        <div><dt class='text-gray-500'>Last Visit</dt><dd class='font-medium text-gray-800'>${mockPatient.lastVisit}</dd></div>
+      `;
+
+    const ul = document.getElementById('symptomList');
+    ul.innerHTML = mockSymptoms.map(s => `<li class='border rounded-md px-3 py-2'><span class='text-gray-500'>${s.q}:</span> <span class='font-medium'>${s.a}</span></li>`).join('');
+
+    const tb = document.getElementById('docsTbody');
+    tb.innerHTML = mockDocs.map(d => `
+        <tr class='hover:bg-gray-50'>
+          <td class='px-3 py-2'><a class='text-[#0000FF] hover:underline' href='${d.url}' target='_blank' rel='noopener'>${d.name}</a></td>
+          <td class='px-3 py-2'>${d.type}</td>
+          <td class='px-3 py-2'>${d.uploaded}</td>
+          <td class='px-3 py-2 text-right'>${d.size}</td>
+        </tr>`).join('');
+}
+
+function renderDiagnoses() {
+    const filter = state.filter.toLowerCase();
+    const rows = mockAI.list
+        .filter(r => r.condition.toLowerCase().includes(filter))
+        .sort((a, b) => state.sortDesc ? b.score - a.score : a.score - b.score);
+    const tb = document.getElementById('diagnosesTbody');
+    tb.innerHTML = rows.map(r => `
+        <tr class='hover:bg-gray-50'>
+          <td class='px-3 py-2 font-medium text-gray-800'>${r.condition}</td>
+          <td class='px-3 py-2'>
+            <div class='inline-flex items-center gap-2'>
+              <span class='px-2 py-0.5 rounded bg-gray-100 text-gray-800'>${fmtScore(r.score)}</span>
+              <div class='w-28 h-2 bg-gray-100 rounded'><div class='h-2 rounded ${r.score>0.6?'bg-green-500':r.score>0.3?'bg-yellow-500':'bg-red-500'}' style='width:${r.score*100}%'></div></div>
+            </div>
+          </td>
+          <td class='px-3 py-2 text-gray-700'>${r.explanation}</td>
+        </tr>`).join('');
+    document.getElementById('diagPaginationInfo').textContent = `Page 1 of 1 · ${rows.length} results`;
+    renderChart(rows);
+}
+
+let chart;
+
+function renderChart(rows) {
+    const el = document.querySelector('#confidenceChart');
+    const labels = rows.map(r => r.condition);
+    const data = rows.map(r => Math.round(r.score * 1000) / 10);
+    const options = {
+        chart: {
+            type: 'bar',
+            height: 280,
+            toolbar: {
+                show: false
+            }
+        },
+        series: [{
+            name: 'Confidence (%)',
+            data
+        }],
+        xaxis: {
+            categories: labels,
+            labels: {
+                rotate: -20
+            }
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '45%',
+                borderRadius: 4
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        tooltip: {
+            y: {
+                formatter: (val) => `${val}%`
+            }
+        },
+        colors: ['#2563eb'],
+        responsive: [{
+            breakpoint: 640,
+            options: {
+                xaxis: {
+                    labels: {
+                        show: false
+                    }
+                }
+            }
+        }]
+    };
+    if (chart) {
+        chart.updateOptions(options);
+    } else {
+        chart = new ApexCharts(el, options);
+        chart.render();
+    }
+}
+
+function initAI() {
+    setUrgencyBadge(mockAI.urgency);
+    renderDiagnoses();
+}
+
+// Filter & Sort handlers
+(function() {
+    document.getElementById('diagnosisFilter')?.addEventListener('input', (e) => {
+        state.filter = e.target.value;
+        renderDiagnoses();
+    });
+    document.getElementById('sortByConfidence')?.addEventListener('click', () => {
+        state.sortDesc = !state.sortDesc;
+        const icon = document.getElementById('confidenceSortIcon');
+        icon.className = 'fa-solid ' + (state.sortDesc ? 'fa-arrow-down-wide-short' : 'fa-arrow-up-wide-short') + ' text-gray-500';
+        renderDiagnoses();
+    });
+})();
+
+// Narration using SpeechSynthesis
+(function() {
+    document.getElementById('narrateBtn')?.addEventListener('click', () => {
+        try {
+            const parts = mockAI.list.slice(0, 3).map((r, i) => `${i===0?'Top':`Next`} suggestion: ${r.condition} with ${fmtScore(r.score)} confidence.`);
+            const utter = new SpeechSynthesisUtterance(`AI analysis for case ${state.caseId}. ${parts.join(' ')}`);
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utter);
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Narration unavailable'
+            });
+        }
+    });
+})();
+
+// Doctor Review Form logic
+(function() {
+    const form = document.getElementById('doctorReviewForm');
+    const notes = document.getElementById('notes');
+    const submitBtn = document.getElementById('submitReview');
+    let selectedDecision = '';
+
+    function updateSubmitState() {
+        const needsNotes = selectedDecision === 'Reject' || selectedDecision === 'Needs More Info';
+        const canSubmit = !!selectedDecision && (!needsNotes || (notes.value && notes.value.trim().length > 4));
+        submitBtn.disabled = !canSubmit;
+        submitBtn.className = canSubmit ? 'px-4 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/90' : 'px-4 py-2 rounded-md bg-gray-300 text-gray-600 cursor-not-allowed';
+    }
+
+    Array.from(document.querySelectorAll('.decision-btn')).forEach(btn => {
+        btn.addEventListener('click', () => {
+            Array.from(document.querySelectorAll('.decision-btn')).forEach(b => b.classList.remove('ring-2', 'ring-offset-1'));
+            btn.classList.add('ring-2', 'ring-offset-1');
+            selectedDecision = btn.dataset.decision;
+            updateSubmitState();
+        });
+    });
+
+    notes.addEventListener('input', updateSubmitState);
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const payload = {
+            caseId: state.caseId,
+            decision: selectedDecision,
+            notes: notes.value.trim()
+        };
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+        // Simulate API call
+        setTimeout(() => {
+            const ok = true;
+            if (ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Review submitted',
+                    text: 'The case has been updated.',
+                    timer: 1800,
+                    showConfirmButton: false
+                });
+                setTimeout(() => {
+                    window.location.href = './doctor_dashboard.html';
+                }, 1200);
+            } else {
+                submitBtn.textContent = 'Submit Review';
+                updateSubmitState();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Submission failed',
+                    text: 'Please try again.'
+                });
+            }
+        }, 1200);
+    });
+})();
+
+// Simulate data fetching
+(function load() {
+    setTimeout(() => {
+        try {
+            renderPatient();
+            initAI();
+        } catch (err) {
+            state.error = err;
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed to load data'
+            });
+        }
+    }, 600);
+})();
+  </script>
+  <!-- Page-specific CSS to place in case_review_page.css -->
+  <!--
+  .accessibility-mode { font-size: 18px; line-height: 1.6; }
+  .accessibility-mode .card { border-color: #111827; }
+  .animate-slide-up { animation: slideUp 220ms ease-out; }
+  @keyframes slideUp { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  -->
+ </body>
+</html>

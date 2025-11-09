@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Registration Page - AI Health Assistant
+  </title>
+  <!-- Brand Typography: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <!-- Font Awesome 6 -->
+  <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-8iPT8x3XWb0wYI2pI2KJmC7CwqCyc4gq8V5bGgP6k7O3bT0p7HfR8oLzI3mQ1hbYwJtYFZ0n6qH3N5Ool0iYxw==" referrerpolicy="no-referrer" rel="stylesheet"/>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+  </script>
+  <!-- ApexCharts (only used if charts needed; included for consistency, not used on this page) -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+  </script>
+  <!-- Site Theme and Components -->
+  <link href="style.css" rel="stylesheet"/>
+  <style>
+   /* registration_page.css (page-specific minimal CSS) */
+    :root { font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--surface-bg, #f9fafb); color: #111827; }
+    /* Accessibility mode: larger font, higher contrast borders, focus outlines */
+    body.accessibility-mode { font-size: 20px; line-height: 1.7; }
+    body.accessibility-mode .form-input, body.accessibility-mode .form-textarea { border-width: 2px; }
+    body.accessibility-mode .focus-ring:focus { outline: 3px solid var(--color-primary, #0000FF); outline-offset: 2px; }
+
+    /* Notification panel slide-in */
+    #notifPanel { transform: translateX(100%); transition: transform 300ms ease; }
+    #notifPanel.open { transform: translateX(0%); }
+
+    /* Help assistant panel */
+    #helpAssistantPanel { transform: translateY(120%); transition: transform 300ms ease, opacity 300ms ease; opacity: 0; }
+    #helpAssistantPanel.open { transform: translateY(0); opacity: 1; }
+
+    /* Disabled button visual clarity */
+    .btn-disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="min-h-screen">
+  <!-- Common Auth Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <a class="flex items-center gap-2" href="./home_page.html">
+      <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+       <i class="fa-solid fa-heart-pulse">
+       </i>
+      </span>
+      <span class="font-semibold">
+       AI Health Assistant
+      </span>
+     </a>
+     <div class="hidden md:flex items-center gap-4">
+      <a class="px-3 py-2 rounded-md bg-white/20 hover:bg-white/30" href="./home_page.html">
+       Back to Home
+      </a>
+      <a class="flex items-center gap-2 px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./about_page.html">
+       <i class="fa-regular fa-question-circle">
+       </i>
+       <span>
+        Support
+       </span>
+      </a>
+     </div>
+     <button class="md:hidden inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white/20" id="sidebarToggle">
+      Menu
+     </button>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+})();
+   </script>
+  </header>
+  <!-- Common Auth Sidebar: Included for Registration Page to help navigate auth flows; active state on Register -->
+  <aside class="mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 space-y-2">
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./login_page.html">
+     <i class="fa-solid fa-right-to-bracket text-[#008080]">
+     </i>
+     <span>
+      Login
+     </span>
+    </a>
+    <a aria-current="page" class="flex items-center gap-3 px-3 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF]" href="./registration_page.html">
+     <i class="fa-solid fa-user-plus text-[#008080]">
+     </i>
+     <span>
+      Register
+     </span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./password_reset_page.html">
+     <i class="fa-solid fa-key text-[#008080]">
+     </i>
+     <span>
+      Forgot Password
+     </span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./verification_page.html">
+     <i class="fa-solid fa-envelope-open-text text-[#008080]">
+     </i>
+     <span>
+      Email Verification
+     </span>
+    </a>
+    <div class="mt-4 border-t pt-4">
+     <a class="flex items-center gap-2 text-sm px-3 py-2 rounded-md hover:bg-gray-100" href="./about_page.html">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span>
+       Help &amp; About
+      </span>
+     </a>
+    </div>
+   </nav>
+  </aside>
+  <!-- Main Content -->
+  <main class="pt-20 md:pl-64">
+   <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6 flex items-center justify-between">
+     <div class="flex items-center gap-3">
+      <h1 class="text-2xl sm:text-3xl font-semibold text-gray-800">
+       Create Your Account
+      </h1>
+      <button class="text-sm px-3 py-1 rounded-md bg-[#0000FF]/10 text-[#0000FF] hover:bg-[#0000FF]/20 focus-ring" id="tipsBtn" title="Show onboarding tips">
+       <i class="fa-solid fa-lightbulb">
+       </i>
+       Tips
+      </button>
+     </div>
+     <div class="flex items-center gap-2">
+      <label class="flex items-center gap-2 text-sm" title="Enable high contrast and larger text">
+       <input class="h-4 w-4" id="accessibilityToggle" type="checkbox"/>
+       <span>
+        Accessibility Mode
+       </span>
+      </label>
+      <button class="text-sm px-3 py-1 rounded-md bg-[#008080] text-white hover:bg-[#008080]/80" id="voiceToggle" title="Listen to page instructions">
+       <i class="fa-solid fa-headphones">
+       </i>
+       Narrate
+      </button>
+     </div>
+    </div>
+    <p class="text-gray-600 mb-8">
+     Fill out the form below to get started. A verification email will be sent upon completion.
+    </p>
+    <div class="card border rounded-xl shadow-sm bg-white">
+     <div class="card-header border-b px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2 text-gray-800">
+       <i class="fa-solid fa-user-plus text-[#008080]">
+       </i>
+       <span class="font-medium">
+        Registration
+       </span>
+      </div>
+      <button class="text-sm px-3 py-1 rounded-md bg-[#0000FF]/10 text-[#0000FF] hover:bg-[#0000FF]/20" id="notifBtn" title="Open notifications">
+       <i class="fa-regular fa-bell">
+       </i>
+       Notifications
+      </button>
+     </div>
+     <div class="px-6 py-6">
+      <form class="space-y-6" id="registrationForm" novalidate="">
+       <!-- User Account Fields -->
+       <div class="space-y-4">
+        <div>
+         <label class="block text-gray-700 font-medium mb-1" for="fullName">
+          Full Name
+         </label>
+         <input class="form-input w-full rounded-md px-3 py-2 focus-ring" id="fullName" name="fullName" placeholder="e.g., Jane Doe" required="" type="text"/>
+         <p class="form-error text-sm mt-1 hidden" id="fullNameError">
+          Please enter a valid name using letters and spaces only.
+         </p>
+        </div>
+        <div>
+         <label class="block text-gray-700 font-medium mb-1" for="email">
+          Email Address
+         </label>
+         <input class="form-input w-full rounded-md px-3 py-2 focus-ring" id="email" name="email" placeholder="you@example.com" required="" type="email"/>
+         <p class="form-error text-sm mt-1 hidden" id="emailError">
+          Please enter a valid email address.
+         </p>
+         <p class="form-error text-sm mt-1 hidden" id="emailTaken">
+          This email is already registered. Try another.
+         </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div>
+          <label class="block text-gray-700 font-medium mb-1" for="password">
+           Password
+          </label>
+          <div class="relative">
+           <input class="form-input w-full rounded-md px-3 py-2 pr-10 focus-ring" id="password" name="password" placeholder="Enter a secure password" required="" type="password"/>
+           <button class="absolute right-2 top-2 text-gray-500 hover:text-gray-700" id="togglePw" title="Show/Hide password" type="button">
+            <i class="fa-regular fa-eye">
+            </i>
+           </button>
+          </div>
+          <p class="form-error text-sm mt-1 hidden" id="passwordError">
+           Minimum 8 chars. Include upper, lower, number, and symbol.
+          </p>
+         </div>
+         <div>
+          <label class="block text-gray-700 font-medium mb-1" for="confirmPassword">
+           Confirm Password
+          </label>
+          <div class="relative">
+           <input class="form-input w-full rounded-md px-3 py-2 pr-10 focus-ring" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required="" type="password"/>
+           <button class="absolute right-2 top-2 text-gray-500 hover:text-gray-700" id="togglePw2" title="Show/Hide password" type="button">
+            <i class="fa-regular fa-eye">
+            </i>
+           </button>
+          </div>
+          <p class="form-error text-sm mt-1 hidden" id="confirmError">
+           Passwords must match exactly.
+          </p>
+         </div>
+        </div>
+       </div>
+       <!-- Role Selection -->
+       <div class="space-y-3">
+        <p class="text-gray-700 font-medium">
+         Choose your role:
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <label class="flex items-start gap-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+          <input class="mt-1" name="role" type="radio" value="Patient"/>
+          <span>
+           <span class="block font-medium text-gray-800">
+            Patient
+           </span>
+           <span class="block text-sm text-gray-600">
+            I want to check my symptoms and get health insights.
+           </span>
+          </span>
+         </label>
+         <label class="flex items-start gap-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+          <input class="mt-1" name="role" type="radio" value="Doctor"/>
+          <span>
+           <span class="block font-medium text-gray-800">
+            Doctor
+           </span>
+           <span class="block text-sm text-gray-600">
+            I am a healthcare professional and want to review patient cases.
+           </span>
+          </span>
+         </label>
+        </div>
+        <p class="form-error text-sm hidden" id="roleError">
+         Please select your role.
+        </p>
+       </div>
+       <!-- Submission and Legal -->
+       <div class="space-y-4">
+        <label class="flex items-start gap-3">
+         <input class="mt-1" id="terms" type="checkbox"/>
+         <span class="text-gray-700">
+          I agree to the
+          <a class="text-[#0000FF] hover:underline" href="./terms_of_service_page.html">
+           Terms of Service
+          </a>
+          and
+          <a class="text-[#0000FF] hover:underline" href="./privacy_policy_page.html">
+           Privacy Policy
+          </a>
+          .
+         </span>
+        </label>
+        <p class="form-error text-sm hidden" id="termsError">
+         You must agree to the Terms and Privacy Policy.
+        </p>
+        <div class="flex items-center gap-3">
+         <button class="btn-primary inline-flex items-center gap-2 px-5 py-2 rounded-md" id="submitBtn" type="submit">
+          <i class="fa-solid fa-user-check">
+          </i>
+          <span>
+           Create Account
+          </span>
+         </button>
+         <a class="text-[#0000FF] hover:underline" href="./login_page.html">
+          Already have an account? Log In
+         </a>
+        </div>
+       </div>
+      </form>
+     </div>
+     <!-- Optional illustration (loads fallback on error) -->
+     <div class="card-footer border-t px-6 py-4">
+      <div class="flex items-center gap-3">
+       <img alt="Friendly health illustration" class="rounded" onerror="this.src='https://picsum.photos/seed/health/80/80'" src="https://picsum.photos/id/103/80/80"/>
+       <p class="text-sm text-gray-600">
+        Your role determines the experience you’ll see after verification. Choose carefully; it can’t be changed later.
+       </p>
+      </div>
+     </div>
+    </div>
+   </section>
+  </main>
+  <!-- Notification Panel (slides in from right) -->
+  <aside class="fixed top-20 right-0 w-full sm:w-80 bg-white border-l border-gray-200 shadow-xl z-50" id="notifPanel">
+   <div class="px-4 py-3 border-b flex items-center justify-between">
+    <div class="flex items-center gap-2 text-gray-800">
+     <i class="fa-regular fa-bell text-[#008080]">
+     </i>
+     <span class="font-medium">
+      Notifications
+     </span>
+    </div>
+    <button class="text-gray-500 hover:text-gray-700" id="notifClose">
+     <i class="fa-solid fa-xmark">
+     </i>
+    </button>
+   </div>
+   <div class="p-4 space-y-3">
+    <div class="flex items-start gap-3">
+     <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#0ea5e9]/10 text-[#0ea5e9]">
+      <i class="fa-solid fa-info">
+      </i>
+     </span>
+     <div>
+      <p class="text-sm text-gray-800">
+       We’ll send a verification email after you register.
+      </p>
+      <p class="text-xs text-gray-500">
+       Today, 09:24 AM
+      </p>
+     </div>
+    </div>
+    <div class="flex items-start gap-3">
+     <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#16a34a]/10 text-[#16a34a]">
+      <i class="fa-solid fa-check">
+      </i>
+     </span>
+     <div>
+      <p class="text-sm text-gray-800">
+       Password meets recommended security guidelines.
+      </p>
+      <p class="text-xs text-gray-500">
+       Today, 09:22 AM
+      </p>
+     </div>
+    </div>
+    <div class="flex items-start gap-3">
+     <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#f59e0b]/10 text-[#f59e0b]">
+      <i class="fa-solid fa-triangle-exclamation">
+      </i>
+     </span>
+     <div>
+      <p class="text-sm text-gray-800">
+       Double-check your email spelling before submitting.
+      </p>
+      <p class="text-xs text-gray-500">
+       Today, 09:20 AM
+      </p>
+     </div>
+    </div>
+   </div>
+  </aside>
+  <!-- Help Assistant (floating bottom-right) -->
+  <div class="fixed bottom-4 right-4 z-50">
+   <button class="h-12 w-12 rounded-full bg-[#0000FF] text-white shadow-lg flex items-center justify-center hover:bg-[#0000FF]/90" id="helpAssistantBtn" title="Help Assistant">
+    <i class="fa-solid fa-circle-question">
+    </i>
+   </button>
+   <div class="mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-xl p-4" id="helpAssistantPanel">
+    <div class="flex items-center justify-between">
+     <div class="flex items-center gap-2 text-gray-800">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span class="font-medium">
+       Need help?
+      </span>
+     </div>
+     <button class="text-gray-500 hover:text-gray-700" id="helpClose">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <div class="mt-3 space-y-2 text-sm text-gray-700">
+     <p>
+      • Use your primary email; you’ll verify it next.
+     </p>
+     <p>
+      • Choose the role that best matches your needs.
+     </p>
+     <p>
+      • Keep your password secure and unique.
+     </p>
+    </div>
+    <div class="mt-3 flex items-center gap-2">
+     <a class="px-3 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/80 text-sm" href="./about_page.html">
+      <i class="fa-regular fa-question-circle">
+      </i>
+      Support
+     </a>
+     <a class="px-3 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF] hover:bg-[#0000FF]/20 text-sm" href="./features_page.html">
+      <i class="fa-solid fa-list-check">
+      </i>
+      Features
+     </a>
+    </div>
+   </div>
+  </div>
+  <!-- Common Auth Footer -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200 mt-8">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      © 2025 AI-Health Corp.
+     </span>
+    </div>
+    <div class="flex items-center gap-6">
+     <a class="hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      Terms
+     </a>
+     <a class="hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      Privacy
+     </a>
+    </div>
+   </div>
+  </footer>
+  <script>
+   // Accessibility Mode Toggle
+const accessibilityToggle = document.getElementById('accessibilityToggle');
+if (accessibilityToggle) {
+    accessibilityToggle.addEventListener('change', () => {
+        document.body.classList.toggle('accessibility-mode', accessibilityToggle.checked);
+    });
+}
+
+// Voice Narration Toggle
+const voiceToggle = document.getElementById('voiceToggle');
+if (voiceToggle) {
+    voiceToggle.addEventListener('click', () => {
+        const instructions = 'Welcome to the AI Health Assistant registration page. Fill your full name, email address, create a strong password, select your role as patient or doctor, agree to the terms, and press Create Account to continue.';
+        const utter = new SpeechSynthesisUtterance(instructions);
+        utter.lang = 'en-US';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+    });
+}
+
+// Help Assistant toggle
+const helpBtn = document.getElementById('helpAssistantBtn');
+const helpPanel = document.getElementById('helpAssistantPanel');
+const helpClose = document.getElementById('helpClose');
+if (helpBtn && helpPanel) {
+    helpBtn.addEventListener('click', () => helpPanel.classList.toggle('open'));
+}
+if (helpClose && helpPanel) {
+    helpClose.addEventListener('click', () => helpPanel.classList.remove('open'));
+}
+
+// Notification Panel toggle
+const notifBtn = document.getElementById('notifBtn');
+const notifPanel = document.getElementById('notifPanel');
+const notifClose = document.getElementById('notifClose');
+if (notifBtn && notifPanel) {
+    notifBtn.addEventListener('click', () => notifPanel.classList.add('open'));
+}
+if (notifClose && notifPanel) {
+    notifClose.addEventListener('click', () => notifPanel.classList.remove('open'));
+}
+
+// Onboarding Tips using SweetAlert2 queue
+const tipsBtn = document.getElementById('tipsBtn');
+if (tipsBtn) {
+    tipsBtn.addEventListener('click', async () => {
+        const steps = [{
+            title: 'Step 1',
+            text: 'Enter your full name. Letters and spaces only.'
+        }, {
+            title: 'Step 2',
+            text: 'Use a valid email. We’ll verify it next.'
+        }, {
+            title: 'Step 3',
+            text: 'Create a strong password: 8+ chars with upper, lower, number, and symbol.'
+        }, {
+            title: 'Step 4',
+            text: 'Select Patient or Doctor. This choice is permanent.'
+        }, {
+            title: 'Step 5',
+            text: 'Agree to the terms and Create Account.'
+        }];
+        for (const s of steps) {
+            // eslint-disable-next-line no-await-in-loop
+            await Swal.fire({
+                icon: 'info',
+                confirmButtonText: 'Next',
+                ...s
+            });
+        }
+        Swal.fire({
+            icon: 'success',
+            title: 'You are ready!',
+            text: 'Complete the form and submit.',
+            confirmButtonText: 'Got it'
+        });
+    });
+}
+
+// Password show/hide
+const togglePw = document.getElementById('togglePw');
+const togglePw2 = document.getElementById('togglePw2');
+const pw = document.getElementById('password');
+const pw2 = document.getElementById('confirmPassword');
+if (togglePw && pw) {
+    togglePw.addEventListener('click', () => {
+        pw.type = pw.type === 'password' ? 'text' : 'password';
+        togglePw.innerHTML = pw.type === 'password' ? '<i class="fa-regular fa-eye"></i>' : '<i class="fa-regular fa-eye-slash"></i>';
+    });
+}
+if (togglePw2 && pw2) {
+    togglePw2.addEventListener('click', () => {
+        pw2.type = pw2.type === 'password' ? 'text' : 'password';
+        togglePw2.innerHTML = pw2.type === 'password' ? '<i class="fa-regular fa-eye"></i>' : '<i class="fa-regular fa-eye-slash"></i>';
+    });
+}
+
+// Form validation and submission
+const form = document.getElementById('registrationForm');
+const fullNameInput = document.getElementById('fullName');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const confirmInput = document.getElementById('confirmPassword');
+const roleError = document.getElementById('roleError');
+const termsCheckbox = document.getElementById('terms');
+const submitBtn = document.getElementById('submitBtn');
+
+const fullNameError = document.getElementById('fullNameError');
+const emailError = document.getElementById('emailError');
+const emailTaken = document.getElementById('emailTaken');
+const passwordError = document.getElementById('passwordError');
+const confirmError = document.getElementById('confirmError');
+const termsError = document.getElementById('termsError');
+
+const existingEmails = ['taken@demo.com', 'user@example.com', 'doctor@demo.com'];
+
+function validateName(value) {
+    return /^[A-Za-z ]+$/.test(value.trim());
+}
+
+function validateEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function validatePassword(value) {
+    return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value) && /[^A-Za-z0-9]/.test(value);
+}
+
+function checkRoleSelected() {
+    return !!document.querySelector('input[name="role"]:checked');
+}
+
+function toggleError(el, show) {
+    if (!el) return;
+    el.classList.toggle('hidden', !show);
+}
+
+function updateSubmitState() {
+    const valid = validateName(fullNameInput.value) && validateEmail(emailInput.value) && !emailTaken.classList.contains('hidden') === false && validatePassword(passwordInput.value) && passwordInput.value === confirmInput.value && checkRoleSelected() && termsCheckbox.checked;
+    submitBtn.classList.toggle('btn-disabled', !valid);
+    submitBtn.disabled = !valid;
+}
+
+fullNameInput.addEventListener('input', () => {
+    toggleError(fullNameError, !validateName(fullNameInput.value));
+    updateSubmitState();
+});
+
+emailInput.addEventListener('input', () => {
+    toggleError(emailError, !validateEmail(emailInput.value));
+    toggleError(emailTaken, false);
+    updateSubmitState();
+});
+emailInput.addEventListener('blur', () => {
+    if (!validateEmail(emailInput.value)) return;
+    toggleError(emailTaken, false);
+    // Simulate async uniqueness check
+    setTimeout(() => {
+        const taken = existingEmails.includes(emailInput.value.trim().toLowerCase());
+        toggleError(emailTaken, taken);
+        updateSubmitState();
+    }, 500);
+});
+
+passwordInput.addEventListener('input', () => {
+    toggleError(passwordError, !validatePassword(passwordInput.value));
+    toggleError(confirmError, confirmInput.value.length > 0 && passwordInput.value !== confirmInput.value);
+    updateSubmitState();
+});
+confirmInput.addEventListener('input', () => {
+    toggleError(confirmError, passwordInput.value !== confirmInput.value);
+    updateSubmitState();
+});
+
+document.querySelectorAll('input[name="role"]').forEach(r => {
+    r.addEventListener('change', () => {
+        toggleError(roleError, !checkRoleSelected());
+        updateSubmitState();
+    });
+});
+
+termsCheckbox.addEventListener('change', () => {
+    toggleError(termsError, !termsCheckbox.checked);
+    updateSubmitState();
+});
+
+form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
+    if (submitBtn.disabled) return;
+    submitBtn.disabled = true;
+    submitBtn.classList.add('btn-disabled');
+
+    Swal.fire({
+        title: 'Creating your account...',
+        text: 'Please wait while we process your registration.',
+        icon: 'info',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    setTimeout(() => {
+        // Simulate success
+        Swal.fire({
+            icon: 'success',
+            title: 'Account Created',
+            text: 'We have sent a verification email to ' + emailInput.value + '. Please verify to continue.',
+            confirmButtonText: 'Go to Verification'
+        }).then(() => {
+            window.location.assign('./verification_page.html');
+        });
+    }, 1200);
+});
+  </script>
+ </body>
+</html>

@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Settings Page - Doctor/Patient Portal
+  </title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" referrerpolicy="no-referrer" rel="stylesheet">
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+   </script>
+   <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+   </script>
+   <link href="style.css" rel="stylesheet"/>
+   <style>
+    /* settings_page.css (page-specific) */
+    :root { --accent-blue: #2563eb; --accent-teal: #008080; }
+    body { font-family: 'Poppins', sans-serif; font-size: 18px; line-height: 1.6; }
+    /* Tabs underline active indicator */
+    .tab { @apply inline-flex items-center gap-2 px-4 py-2 rounded-md cursor-pointer transition; }
+    .tab-active { box-shadow: inset 0 -2px 0 0 var(--accent-blue); color: var(--accent-blue); font-weight: 600; }
+    /* Slide-in panel (right) */
+    .notif-panel { position: fixed; right: 1rem; top: 5rem; width: 360px; max-width: 90vw; background: #fff; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform: translateX(120%); transition: transform .3s ease; z-index: 60; }
+    .notif-panel.open { transform: translateX(0); }
+    /* Help assistant slide-up */
+    .help-assistant-panel { position: fixed; right: 1rem; bottom: 5rem; width: 360px; max-width: 92vw; background: #fff; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform: translateY(120%); transition: transform .3s ease; z-index: 60; }
+    .help-assistant-panel.open { transform: translateY(0); }
+    /* Accessibility mode */
+    body.accessibility { font-size: 20px; }
+    /* Simple tooltip style (optional enhancement) */
+    .hint { border-bottom: 1px dotted currentColor; cursor: help; }
+   </style>
+  </link>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="bg-gray-50 text-gray-800">
+  <!-- Header (Common Component) -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <div class="flex items-center gap-3">
+      <button class="md:hidden inline-flex items-center px-2 py-2 rounded-md bg-white/20" id="sidebarToggle">
+       <i class="fa-solid fa-bars">
+       </i>
+      </button>
+      <a class="flex items-center gap-2" href="./doctor_dashboard.html">
+       <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+        <i class="fa-solid fa-heart-pulse">
+        </i>
+       </span>
+       <span class="font-semibold tracking-wide">
+        Doctor Portal
+       </span>
+      </a>
+     </div>
+     <div class="hidden md:flex items-center gap-4 flex-1 justify-center">
+      <div class="w-full max-w-lg relative">
+       <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/70">
+       </i>
+       <input class="w-full pl-9 pr-3 py-2 rounded-md bg-white/20 placeholder-white/70 focus:bg-white/30 focus:outline-none" placeholder="Search cases (ID, patient name, status)..." type="search"/>
+      </div>
+     </div>
+     <div class="flex items-center gap-2">
+      <a class="hidden sm:inline-flex px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./doctor_dashboard.html#pending">
+       Go to Queue
+      </a>
+      <button aria-label="Notifications" class="p-2 rounded-md hover:bg-white/20" id="notifBtn">
+       <i class="fa-regular fa-bell">
+       </i>
+      </button>
+      <button aria-label="Messages" class="p-2 rounded-md hover:bg-white/20">
+       <i class="fa-regular fa-envelope">
+       </i>
+      </button>
+      <div class="relative">
+       <button class="inline-flex items-center gap-2 px-2 py-2 rounded-md hover:bg-white/20" id="profileMenuBtn">
+        <i class="fa-regular fa-user">
+        </i>
+        <span class="hidden sm:inline">
+         Profile
+        </span>
+        <i class="fa-solid fa-chevron-down text-xs">
+        </i>
+       </button>
+       <div class="absolute right-0 mt-2 w-44 bg-white text-gray-700 rounded-md shadow-lg overflow-hidden hidden" id="profileMenu">
+        <a class="block px-4 py-2 hover:bg-gray-100" href="./settings_page.html">
+         Settings
+        </a>
+        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='./login_page.html'">
+         Logout
+        </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+    const pb = document.getElementById('profileMenuBtn');
+    const pm = document.getElementById('profileMenu');
+    if (pb && pm) {
+        pb.addEventListener('click', () => pm.classList.toggle('hidden'));
+    }
+    document.addEventListener('click', (e) => {
+        const pm = document.getElementById('profileMenu');
+        const pb = document.getElementById('profileMenuBtn');
+        if (pm && !pm.classList.contains('hidden') && !pb.contains(e.target) && !pm.contains(e.target)) {
+            pm.classList.add('hidden');
+        }
+    });
+})();
+   </script>
+  </header>
+  <!-- Sidebar (Common Component) -->
+  <aside class="mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 text-gray-700">
+    <p class="px-3 pb-2 text-xs uppercase tracking-wide text-gray-500">
+     Queue
+    </p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./doctor_dashboard.html">
+     <i class="fa-solid fa-gauge text-[#008080]">
+     </i>
+     <span>
+      Dashboard
+     </span>
+    </a>
+    <details class="group mt-2">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-clipboard-list text-[#008080]">
+      </i>
+      <span>
+       Cases
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#pending">
+       Pending Review
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#confirmed">
+       Confirmed
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#rejected">
+       Rejected
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./case_review_page.html">
+       Review Case
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./case_details_page.html">
+       Case Details
+      </a>
+     </div>
+    </details>
+    <div class="mt-4 border-t pt-4">
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF] bg-[#0000FF]/10 text-[#0000FF]" href="./settings_page.html">
+      <i class="fa-solid fa-gear text-[#008080]">
+      </i>
+      <span>
+       Settings
+      </span>
+     </a>
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./about_page.html">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span>
+       Support
+      </span>
+     </a>
+    </div>
+   </nav>
+  </aside>
+  <!-- Notification Panel (slides from right) -->
+  <div class="notif-panel" id="notificationPanel">
+   <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+      <i class="fa-solid fa-inbox">
+      </i>
+     </span>
+     <h3 class="text-base font-semibold">
+      Notifications
+     </h3>
+    </div>
+    <button aria-label="Close notifications" class="p-2 rounded-md hover:bg-gray-100" id="notifClose">
+     <i class="fa-solid fa-xmark">
+     </i>
+    </button>
+   </div>
+   <div class="max-h-[60vh] overflow-y-auto divide-y">
+    <div class="p-4 flex items-start gap-3">
+     <span class="inline-flex h-6 w-6 items-center justify-center rounded bg-green-100 text-green-700">
+      <i class="fa-solid fa-check">
+      </i>
+     </span>
+     <div>
+      <p class="font-medium">
+       Profile updated
+      </p>
+      <p class="text-sm text-gray-600">
+       Your profile information was saved successfully.
+      </p>
+      <p class="text-xs text-gray-400 mt-1">
+       Just now
+      </p>
+     </div>
+    </div>
+    <div class="p-4 flex items-start gap-3">
+     <span class="inline-flex h-6 w-6 items-center justify-center rounded bg-amber-100 text-amber-700">
+      <i class="fa-solid fa-triangle-exclamation">
+      </i>
+     </span>
+     <div>
+      <p class="font-medium">
+       Password expiry reminder
+      </p>
+      <p class="text-sm text-gray-600">
+       Consider updating your password for better security.
+      </p>
+      <p class="text-xs text-gray-400 mt-1">
+       2 days ago
+      </p>
+     </div>
+    </div>
+    <div class="p-4 flex items-start gap-3">
+     <span class="inline-flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-blue-700">
+      <i class="fa-solid fa-info">
+      </i>
+     </span>
+     <div>
+      <p class="font-medium">
+       New feature
+      </p>
+      <p class="text-sm text-gray-600">
+       Accessibility mode is now available in Settings.
+      </p>
+      <p class="text-xs text-gray-400 mt-1">
+       1 week ago
+      </p>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- Main Content -->
+  <main class="pt-16 md:ml-64 min-h-screen">
+   <section class="main-container">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+     <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-semibold section-title">
+       Account Settings
+      </h1>
+      <div class="flex items-center gap-3">
+       <label class="flex items-center gap-2 text-sm" title="Increase readability and contrast">
+        <input class="h-4 w-4" id="accessibilityToggle" type="checkbox"/>
+        <span>
+         Accessibility Mode
+        </span>
+       </label>
+      </div>
+     </div>
+     <!-- Feedback area -->
+     <div class="mt-4 hidden" id="systemFeedback">
+      <div class="alert-info border rounded-md p-4 flex items-start gap-3">
+       <span class="inline-flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-blue-700">
+        <i class="fa-solid fa-circle-info">
+        </i>
+       </span>
+       <div>
+        <p class="font-medium">
+         Tip
+        </p>
+        <p class="text-sm">
+         Use the tabs to switch between Profile and Password settings. Hover over the hint icons for guidance.
+        </p>
+       </div>
+       <button class="ml-auto text-gray-500 hover:text-gray-700" onclick="document.getElementById('systemFeedback').classList.add('hidden')">
+        <i class="fa-solid fa-xmark">
+        </i>
+       </button>
+      </div>
+     </div>
+     <!-- Account Settings Manager: Tabs -->
+     <div class="mt-6">
+      <div class="flex gap-2 border-b border-gray-200">
+       <button aria-controls="panelProfile" aria-selected="true" class="tab tab-active text-gray-700" id="tabProfile">
+        <i class="fa-regular fa-id-card">
+        </i>
+        <span>
+         Profile Information
+        </span>
+       </button>
+       <button aria-controls="panelPassword" aria-selected="false" class="tab text-gray-700" id="tabPassword">
+        <i class="fa-solid fa-key">
+        </i>
+        <span>
+         Change Password
+        </span>
+       </button>
+      </div>
+      <!-- Panel: Profile Information -->
+      <div class="mt-6" id="panelProfile">
+       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+         <div class="card rounded-lg border border-gray-200 overflow-hidden">
+          <div class="card-header px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+           <h2 class="font-semibold">
+            Your Profile
+           </h2>
+           <span class="text-sm text-gray-500">
+            Manage your personal details
+           </span>
+          </div>
+          <form class="p-4 space-y-4" id="profileForm" novalidate="">
+           <div class="flex items-center gap-4">
+            <img alt="Profile avatar" class="h-16 w-16 rounded-full object-cover border" id="avatar" onerror="this.onerror=null; this.src='https://picsum.photos/seed/profile/96/96';" src="./assets/profile.jpg"/>
+            <div class="text-sm text-gray-600">
+             This avatar is for display only.
+            </div>
+           </div>
+           <div>
+            <label class="block text-sm font-medium text-gray-700" for="fullName">
+             Full Name
+             <i class="fa-regular fa-circle-question text-gray-400 ml-1 hint" title="Enter letters and spaces only.">
+             </i>
+            </label>
+            <input class="form-input mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500" id="fullName" placeholder="Enter your full name" required="" type="text"/>
+            <p class="mt-1 text-sm text-red-600 hidden" id="fullNameError">
+             Please enter a valid full name (letters and spaces only).
+            </p>
+           </div>
+           <div>
+            <label class="block text-sm font-medium text-gray-700" for="email">
+             Email Address
+            </label>
+            <input class="form-input mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-100 text-gray-600" disabled="" id="email" type="email"/>
+            <p class="text-xs text-gray-500 mt-1">
+             Your email is used for login and cannot be changed here.
+            </p>
+           </div>
+           <div class="flex items-center gap-3">
+            <button class="btn-primary inline-flex items-center gap-2 px-4 py-2 rounded-md" id="saveProfileBtn" type="submit">
+             <i class="fa-solid fa-floppy-disk">
+             </i>
+             <span>
+              Save Changes
+             </span>
+            </button>
+            <span class="text-sm text-gray-500 hidden" id="profileSaving">
+             Saving...
+            </span>
+            <span class="text-sm" id="profileMessage">
+            </span>
+           </div>
+          </form>
+         </div>
+        </div>
+        <div class="lg:col-span-1">
+         <div class="card rounded-lg border border-gray-200 overflow-hidden">
+          <div class="card-header px-4 py-3 border-b bg-gray-50">
+           <h3 class="font-semibold">
+            Login Activity (7 days)
+           </h3>
+          </div>
+          <div class="p-4">
+           <div class="w-full h-56" id="activityChart">
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+      <!-- Panel: Change Password -->
+      <div class="mt-6 hidden" id="panelPassword">
+       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+         <div class="card rounded-lg border border-gray-200 overflow-hidden">
+          <div class="card-header px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+           <h2 class="font-semibold">
+            Change Password
+           </h2>
+           <span class="text-sm text-gray-500">
+            Keep your account secure
+           </span>
+          </div>
+          <form class="p-4 space-y-4" id="passwordForm" novalidate="">
+           <div>
+            <label class="block text-sm font-medium text-gray-700" for="currentPassword">
+             Current Password
+            </label>
+            <input class="form-input mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500" id="currentPassword" placeholder="Enter your current password" required="" type="password"/>
+            <p class="mt-1 text-sm text-red-600 hidden" id="currentPassError">
+             Current password is required.
+            </p>
+           </div>
+           <div>
+            <label class="block text-sm font-medium text-gray-700" for="newPassword">
+             New Password
+            </label>
+            <input class="form-input mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500" id="newPassword" placeholder="Enter your new password" required="" type="password"/>
+            <ul class="mt-2 text-sm text-gray-600 space-y-1" id="passwordRules">
+             <li class="flex items-center gap-2" id="ruleLen">
+              <i class="fa-regular fa-circle">
+              </i>
+              At least 8 characters
+             </li>
+             <li class="flex items-center gap-2" id="ruleUpper">
+              <i class="fa-regular fa-circle">
+              </i>
+              One uppercase letter
+             </li>
+             <li class="flex items-center gap-2" id="ruleLower">
+              <i class="fa-regular fa-circle">
+              </i>
+              One lowercase letter
+             </li>
+             <li class="flex items-center gap-2" id="ruleNum">
+              <i class="fa-regular fa-circle">
+              </i>
+              One number
+             </li>
+             <li class="flex items-center gap-2" id="ruleSpec">
+              <i class="fa-regular fa-circle">
+              </i>
+              One special character
+             </li>
+            </ul>
+           </div>
+           <div>
+            <label class="block text-sm font-medium text-gray-700" for="confirmNewPassword">
+             Confirm New Password
+            </label>
+            <input class="form-input mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500" id="confirmNewPassword" placeholder="Confirm your new password" required="" type="password"/>
+            <p class="mt-1 text-sm text-red-600 hidden" id="confirmPassError">
+             Passwords do not match.
+            </p>
+           </div>
+           <div class="flex items-center gap-3">
+            <button class="btn-warning inline-flex items-center gap-2 px-4 py-2 rounded-md" id="updatePasswordBtn" type="submit">
+             <i class="fa-solid fa-key">
+             </i>
+             <span>
+              Update Password
+             </span>
+            </button>
+            <span class="text-sm text-gray-500 hidden" id="passSaving">
+             Updating...
+            </span>
+            <span class="text-sm" id="passMessage">
+            </span>
+           </div>
+          </form>
+         </div>
+         <!-- Security Activity Table -->
+         <div class="card rounded-lg border border-gray-200 overflow-hidden mt-6">
+          <div class="card-header px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+           <h3 class="font-semibold">
+            Security Activity
+           </h3>
+           <div class="flex items-center gap-3">
+            <input class="form-input rounded-md border border-gray-300 px-3 py-1.5" id="activityFilter" placeholder="Filter by event/location" type="search"/>
+           </div>
+          </div>
+          <div class="overflow-x-auto">
+           <table class="min-w-full">
+            <thead class="table-header">
+             <tr>
+              <th class="px-4 py-2 text-left cursor-pointer" data-sort="date">
+               Date
+               <i class="fa-solid fa-sort text-gray-400">
+               </i>
+              </th>
+              <th class="px-4 py-2 text-left cursor-pointer" data-sort="event">
+               Event
+               <i class="fa-solid fa-sort text-gray-400">
+               </i>
+              </th>
+              <th class="px-4 py-2 text-left cursor-pointer" data-sort="location">
+               Location
+               <i class="fa-solid fa-sort text-gray-400">
+               </i>
+              </th>
+              <th class="px-4 py-2 text-left cursor-pointer" data-sort="ip">
+               IP
+               <i class="fa-solid fa-sort text-gray-400">
+               </i>
+              </th>
+              <th class="px-4 py-2 text-left">
+               Status
+              </th>
+              <th class="px-4 py-2 text-left">
+               Actions
+              </th>
+             </tr>
+            </thead>
+            <tbody class="table-striped" id="activityTbody">
+            </tbody>
+           </table>
+          </div>
+          <div class="card-footer px-4 py-3 border-t bg-gray-50 flex items-center justify-between text-sm">
+           <div id="paginationInfo">
+            Showing 0-0 of 0
+           </div>
+           <div class="flex items-center gap-2">
+            <button class="pagination-btn px-3 py-1.5 rounded-md border" id="prevPage">
+             Prev
+            </button>
+            <span id="pageIndicator">
+             1 / 1
+            </span>
+            <button class="pagination-btn px-3 py-1.5 rounded-md border" id="nextPage">
+             Next
+            </button>
+           </div>
+          </div>
+         </div>
+        </div>
+        <div class="lg:col-span-1">
+         <div class="card rounded-lg border border-gray-200 overflow-hidden">
+          <div class="card-header px-4 py-3 border-b bg-gray-50">
+           <h3 class="font-semibold">
+            Safety Tips
+           </h3>
+          </div>
+          <div class="p-4 text-sm text-gray-700 space-y-2">
+           <p>
+            <i class="fa-solid fa-shield-halved text-green-600 mr-2">
+            </i>
+            Use a strong, unique password.
+           </p>
+           <p>
+            <i class="fa-solid fa-user-lock text-blue-600 mr-2">
+            </i>
+            Enable two-factor authentication when available.
+           </p>
+           <p>
+            <i class="fa-solid fa-eye-slash text-amber-600 mr-2">
+            </i>
+            Never share your password.
+           </p>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+  </main>
+  <!-- Help Assistant Floating Button and Panel -->
+  <button class="fixed right-4 bottom-4 z-50 inline-flex items-center gap-2 px-4 py-3 rounded-full bg-[#008080] text-white shadow-lg hover:bg-[#008080]/90" id="helpAssistantToggle">
+   <i class="fa-solid fa-circle-question">
+   </i>
+   <span>
+    Help
+   </span>
+  </button>
+  <div class="help-assistant-panel" id="helpAssistantPanel">
+   <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#0000FF]/10 text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <h3 class="font-semibold">
+      Help Assistant
+     </h3>
+    </div>
+    <button aria-label="Close help" class="p-2 rounded-md hover:bg-gray-100" id="helpClose">
+     <i class="fa-solid fa-xmark">
+     </i>
+    </button>
+   </div>
+   <div class="p-4 text-sm space-y-3">
+    <p>
+     Welcome to Settings! Use tabs to manage your profile and password. Click the bell icon in the header to view notifications.
+    </p>
+    <ul class="list-disc pl-5 space-y-1">
+     <li>
+      Profile: Update your full name and review your email.
+     </li>
+     <li>
+      Password: Choose a strong, unique password.
+     </li>
+     <li>
+      Review your security activity below for recent logins.
+     </li>
+    </ul>
+    <div class="flex items-center gap-2">
+     <button class="btn-info px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center gap-2" id="voiceGuideBtn">
+      <i class="fa-solid fa-volume-high">
+      </i>
+      Voice Narration
+     </button>
+     <button class="px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50" id="stopVoiceBtn">
+      Stop
+     </button>
+    </div>
+   </div>
+  </div>
+  <!-- Footer (Common Component) -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      Doctor Portal
+     </span>
+    </div>
+    <div class="flex items-center gap-4">
+     <a class="px-3 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/80 text-sm" href="./doctor_dashboard.html#pending">
+      View Pending
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      Terms
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      Privacy
+     </a>
+    </div>
+   </div>
+  </footer>
+  <script>
+   // Accessibility mode toggle
+const accessibilityToggle = document.getElementById('accessibilityToggle');
+if (accessibilityToggle) {
+    accessibilityToggle.addEventListener('change', (e) => {
+        document.body.classList.toggle('accessibility', e.target.checked);
+    });
+}
+
+// System feedback show on load
+window.addEventListener('load', () => {
+    const sf = document.getElementById('systemFeedback');
+    if (sf) sf.classList.remove('hidden');
+});
+
+// Tabs logic
+const tabProfile = document.getElementById('tabProfile');
+const tabPassword = document.getElementById('tabPassword');
+const panelProfile = document.getElementById('panelProfile');
+const panelPassword = document.getElementById('panelPassword');
+
+function activateTab(target) {
+    if (target === 'profile') {
+        tabProfile.classList.add('tab-active');
+        tabPassword.classList.remove('tab-active');
+        panelProfile.classList.remove('hidden');
+        panelPassword.classList.add('hidden');
+    } else {
+        tabPassword.classList.add('tab-active');
+        tabProfile.classList.remove('tab-active');
+        panelPassword.classList.remove('hidden');
+        panelProfile.classList.add('hidden');
+    }
+}
+tabProfile.addEventListener('click', () => activateTab('profile'));
+tabPassword.addEventListener('click', () => activateTab('password'));
+
+// Mock current user data fetch
+const currentUser = {
+    id: 'U-10213',
+    fullName: 'Dr. Meredith Grey',
+    email: 'meredith.grey@hospital.org',
+    role: 'Doctor'
+};
+const fullNameInput = document.getElementById('fullName');
+const emailInput = document.getElementById('email');
+const fullNameError = document.getElementById('fullNameError');
+const saveProfileBtn = document.getElementById('saveProfileBtn');
+const profileSaving = document.getElementById('profileSaving');
+const profileMessage = document.getElementById('profileMessage');
+
+function loadUser() {
+    // Simulate API load with setTimeout
+    setTimeout(() => {
+        fullNameInput.value = currentUser.fullName;
+        emailInput.value = currentUser.email;
+    }, 300);
+}
+loadUser();
+
+// Full name validation: letters and spaces only
+function validateFullName(name) {
+    return /^[A-Za-z\s]+$/.test(name.trim()) && name.trim().length > 0;
+}
+
+fullNameInput.addEventListener('input', () => {
+    if (validateFullName(fullNameInput.value)) {
+        fullNameError.classList.add('hidden');
+    }
+});
+
+// Profile form submit
+document.getElementById('profileForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nameVal = fullNameInput.value;
+    if (!validateFullName(nameVal)) {
+        fullNameError.classList.remove('hidden');
+        fullNameInput.focus();
+        return;
+    }
+    profileSaving.classList.remove('hidden');
+    saveProfileBtn.disabled = true;
+    profileMessage.textContent = '';
+    // Simulate API call
+    setTimeout(() => {
+        profileSaving.classList.add('hidden');
+        saveProfileBtn.disabled = false;
+        currentUser.fullName = nameVal.trim();
+        Swal.fire({
+            icon: 'success',
+            title: 'Profile updated',
+            text: 'Your profile information has been saved.',
+            confirmButtonColor: '#2563eb'
+        });
+        profileMessage.className = 'text-sm text-green-600';
+        profileMessage.textContent = 'Changes saved successfully.';
+    }, 900);
+});
+
+// Password complexity checks
+const newPassword = document.getElementById('newPassword');
+const confirmNewPassword = document.getElementById('confirmNewPassword');
+const currentPassword = document.getElementById('currentPassword');
+const currentPassError = document.getElementById('currentPassError');
+const confirmPassError = document.getElementById('confirmPassError');
+
+function checkRule(el, satisfied) {
+    const icon = el.querySelector('i');
+    if (satisfied) {
+        el.classList.remove('text-gray-600');
+        el.classList.add('text-green-600');
+        icon.className = 'fa-solid fa-check-circle';
+    } else {
+        el.classList.add('text-gray-600');
+        el.classList.remove('text-green-600');
+        icon.className = 'fa-regular fa-circle';
+    }
+}
+const ruleLen = document.getElementById('ruleLen');
+const ruleUpper = document.getElementById('ruleUpper');
+const ruleLower = document.getElementById('ruleLower');
+const ruleNum = document.getElementById('ruleNum');
+const ruleSpec = document.getElementById('ruleSpec');
+
+function validatePasswordStrength(pw) {
+    checkRule(ruleLen, pw.length >= 8);
+    checkRule(ruleUpper, /[A-Z]/.test(pw));
+    checkRule(ruleLower, /[a-z]/.test(pw));
+    checkRule(ruleNum, /\d/.test(pw));
+    checkRule(ruleSpec, /[^A-Za-z0-9]/.test(pw));
+}
+newPassword.addEventListener('input', () => validatePasswordStrength(newPassword.value));
+confirmNewPassword.addEventListener('input', () => {
+    if (confirmNewPassword.value === newPassword.value) {
+        confirmPassError.classList.add('hidden');
+    }
+});
+
+// Password form submit
+document.getElementById('passwordForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const cur = currentPassword.value.trim();
+    const np = newPassword.value;
+    const cp = confirmNewPassword.value;
+    if (!cur) {
+        currentPassError.classList.remove('hidden');
+        currentPassword.focus();
+        return;
+    } else {
+        currentPassError.classList.add('hidden');
+    }
+    // Check complexity
+    const ok = (np.length >= 8) && /[A-Z]/.test(np) && /[a-z]/.test(np) && /\d/.test(np) && /[^A-Za-z0-9]/.test(np);
+    if (!ok) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Weak password',
+            text: 'Please meet all password requirements.',
+            confirmButtonColor: '#dc2626'
+        });
+        newPassword.focus();
+        return;
+    }
+    if (np !== cp) {
+        confirmPassError.classList.remove('hidden');
+        confirmNewPassword.focus();
+        return;
+    }
+    document.getElementById('passSaving').classList.remove('hidden');
+    document.getElementById('updatePasswordBtn').disabled = true;
+    // Simulate secure API call
+    setTimeout(() => {
+        document.getElementById('passSaving').classList.add('hidden');
+        document.getElementById('updatePasswordBtn').disabled = false;
+        Swal.fire({
+            icon: 'success',
+            title: 'Password updated',
+            text: 'Your password has been changed successfully.',
+            confirmButtonColor: '#2563eb'
+        });
+        document.getElementById('passMessage').className = 'text-sm text-green-600';
+        document.getElementById('passMessage').textContent = 'Password updated.';
+        // Clear fields
+        currentPassword.value = '';
+        newPassword.value = '';
+        confirmNewPassword.value = '';
+        validatePasswordStrength('');
+    }, 1200);
+});
+
+// ApexCharts: Login Activity
+const chartOptions = {
+    chart: {
+        type: 'area',
+        height: 220,
+        toolbar: {
+            show: false
+        }
+    },
+    series: [{
+        name: 'Logins',
+        data: [3, 5, 2, 6, 4, 7, 5]
+    }],
+    xaxis: {
+        categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    },
+    colors: ['#2563eb'],
+    dataLabels: {
+        enabled: false
+    },
+    stroke: {
+        curve: 'smooth'
+    },
+    fill: {
+        type: 'gradient',
+        gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.4,
+            opacityTo: 0.1,
+            stops: [0, 90, 100]
+        }
+    },
+    tooltip: {
+        theme: 'light'
+    }
+};
+const activityChart = new ApexCharts(document.querySelector('#activityChart'), chartOptions);
+activityChart.render();
+
+// Security Activity Table: Mock data
+const activityData = [{
+    date: '2025-10-14 08:42',
+    event: 'Login',
+    location: 'Seattle, US',
+    ip: '192.168.1.10',
+    status: 'Success'
+}, {
+    date: '2025-10-13 21:15',
+    event: 'Password Change',
+    location: 'Seattle, US',
+    ip: '192.168.1.11',
+    status: 'Success'
+}, {
+    date: '2025-10-12 09:05',
+    event: 'Login',
+    location: 'Portland, US',
+    ip: '10.0.0.5',
+    status: 'Failed'
+}, {
+    date: '2025-10-11 18:23',
+    event: 'Login',
+    location: 'Boise, US',
+    ip: '172.16.0.7',
+    status: 'Success'
+}, {
+    date: '2025-10-10 07:40',
+    event: '2FA Setup',
+    location: 'Seattle, US',
+    ip: '192.168.1.12',
+    status: 'Success'
+}, {
+    date: '2025-10-09 12:55',
+    event: 'Login',
+    location: 'Spokane, US',
+    ip: '192.168.1.13',
+    status: 'Success'
+}, {
+    date: '2025-10-08 22:11',
+    event: 'Login',
+    location: 'Seattle, US',
+    ip: '10.0.0.2',
+    status: 'Failed'
+}, {
+    date: '2025-10-07 14:30',
+    event: 'Email Change Attempt',
+    location: 'Unknown',
+    ip: '203.0.113.42',
+    status: 'Blocked'
+}];
+let sortField = 'date';
+let sortDir = 'desc';
+let page = 1;
+const pageSize = 5;
+
+const tbody = document.getElementById('activityTbody');
+const filterInput = document.getElementById('activityFilter');
+const paginationInfo = document.getElementById('paginationInfo');
+const pageIndicator = document.getElementById('pageIndicator');
+const prevPageBtn = document.getElementById('prevPage');
+const nextPageBtn = document.getElementById('nextPage');
+
+function compare(a, b, field) {
+    if (field === 'date') {
+        return new Date(a.date) - new Date(b.date);
+    }
+    return ('' + a[field]).localeCompare(b[field]);
+}
+
+function getFilteredData() {
+    const q = filterInput.value.toLowerCase().trim();
+    if (!q) return activityData.slice();
+    return activityData.filter(r => r.event.toLowerCase().includes(q) || r.location.toLowerCase().includes(q));
+}
+
+function renderTable() {
+    const data = getFilteredData().sort((a, b) => {
+        const val = compare(a, b, sortField);
+        return sortDir === 'asc' ? val : -val;
+    });
+    const total = data.length;
+    const start = (page - 1) * pageSize;
+    const end = Math.min(start + pageSize, total);
+    const pageRows = data.slice(start, end);
+    tbody.innerHTML = pageRows.map(r => `
+        <tr class="table-row border-t">
+          <td class="px-4 py-2 whitespace-nowrap text-gray-700">${r.date}</td>
+          <td class="px-4 py-2 whitespace-nowrap">${r.event}</td>
+          <td class="px-4 py-2 whitespace-nowrap">${r.location}</td>
+          <td class="px-4 py-2 whitespace-nowrap font-mono text-sm">${r.ip}</td>
+          <td class="px-4 py-2 whitespace-nowrap">
+            ${r.status === 'Success' ? '<span class="badge-success inline-flex items-center px-2 py-0.5 rounded">Success</span>' : ''}
+            ${r.status === 'Failed' ? '<span class="badge-danger inline-flex items-center px-2 py-0.5 rounded">Failed</span>' : ''}
+            ${r.status === 'Blocked' ? '<span class="badge-warning inline-flex items-center px-2 py-0.5 rounded">Blocked</span>' : ''}
+          </td>
+          <td class="px-4 py-2 whitespace-nowrap">
+            <button class="px-3 py-1.5 rounded-md border hover:bg-gray-50 text-sm" onclick='Swal.fire({title:"Activity detail", html:` < div style = "text-align:left" > \n < strong > Date: < /strong> ${r.date}<br/ > \n < strong > Event: < /strong> ${r.event}<br/ > \n < strong > Location: < /strong> ${r.location}<br/ > \n < strong > IP: < /strong> ${r.ip}<br/ > \n < strong > Status: < /strong> ${r.status}</div > `, confirmButtonColor: "#2563eb"})'>Details</button>
+          </td>
+        </tr>
+      `).join('');
+    paginationInfo.textContent = `Showing ${total ? start+1 : 0}-${end} of ${total}`;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    pageIndicator.textContent = `${page} / ${totalPages}`;
+    prevPageBtn.disabled = page <= 1;
+    nextPageBtn.disabled = page >= totalPages;
+}
+
+// Sorting handler
+document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+        const field = th.getAttribute('data-sort');
+        if (sortField === field) {
+            sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortField = field;
+            sortDir = 'asc';
+        }
+        page = 1;
+        renderTable();
+    });
+});
+
+filterInput.addEventListener('input', () => {
+    page = 1;
+    renderTable();
+});
+prevPageBtn.addEventListener('click', () => {
+    if (page > 1) {
+        page--;
+        renderTable();
+    }
+});
+nextPageBtn.addEventListener('click', () => {
+    page++;
+    renderTable();
+});
+
+renderTable();
+
+// Notification panel toggling
+const notifBtn = document.getElementById('notifBtn');
+const notifClose = document.getElementById('notifClose');
+const notificationPanel = document.getElementById('notificationPanel');
+notifBtn && notifBtn.addEventListener('click', () => notificationPanel.classList.toggle('open'));
+notifClose && notifClose.addEventListener('click', () => notificationPanel.classList.remove('open'));
+document.addEventListener('click', (e) => {
+    if (!notificationPanel.contains(e.target) && e.target !== notifBtn && !notifBtn.contains(e.target)) {
+        notificationPanel.classList.remove('open');
+    }
+});
+
+// Help assistant toggle and voice narration
+const helpToggle = document.getElementById('helpAssistantToggle');
+const helpPanel = document.getElementById('helpAssistantPanel');
+const helpClose = document.getElementById('helpClose');
+helpToggle.addEventListener('click', () => helpPanel.classList.toggle('open'));
+helpClose.addEventListener('click', () => helpPanel.classList.remove('open'));
+
+const voiceGuideBtn = document.getElementById('voiceGuideBtn');
+const stopVoiceBtn = document.getElementById('stopVoiceBtn');
+
+function speak(text) {
+    try {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1;
+        utter.pitch = 1;
+        utter.lang = 'en-US';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+    } catch (e) {
+        console.warn('Speech synthesis unavailable');
+    }
+}
+voiceGuideBtn.addEventListener('click', () => {
+    speak('Welcome to Account Settings. Use the Profile tab to update your full name and review your email. Use the Change Password tab to create a strong password. You can filter and review your security activity below.');
+});
+stopVoiceBtn.addEventListener('click', () => window.speechSynthesis.cancel());
+  </script>
+ </body>
+</html>

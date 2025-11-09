@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Patient Dashboard
+  </title>
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+   <!-- SweetAlert2 -->
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+   </script>
+   <!-- ApexCharts -->
+   <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+   </script>
+   <!-- Site Theme -->
+   <link href="style.css" rel="stylesheet"/>
+   <style>
+    /* Patient Dashboard specific CSS (move to patient_dashboard.css if needed) */
+    :root { --pd-transition: 200ms; }
+    body { font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji'; }
+    .patient-dashboard { font-size: 18px; line-height: 1.6; }
+    .accessibility-mode .patient-dashboard { font-size: 20px; }
+    .coachmark-highlight { outline: 2px dashed #2563eb; outline-offset: 4px; border-radius: 8px; }
+    .help-assistant-panel { transition: transform var(--pd-transition) ease, opacity var(--pd-transition) ease; transform: translateY(100%); opacity: 0; }
+    .help-assistant-panel.open { transform: translateY(0); opacity: 1; }
+    .notification-drawer { transition: transform var(--pd-transition) ease; transform: translateX(100%); }
+    .notification-drawer.open { transform: translateX(0); }
+    .table-sortable th { cursor: pointer; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+   </style>
+  </link>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="bg-gray-50 patient-dashboard">
+  <!-- Header (common component) -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <div class="flex items-center gap-3">
+      <button class="md:hidden inline-flex items-center px-2 py-2 rounded-md bg-white/20" id="sidebarToggle" title="Toggle sidebar">
+       <i class="fa-solid fa-bars">
+       </i>
+      </button>
+      <a class="flex items-center gap-2" href="./patient_dashboard.html">
+       <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+        <i class="fa-solid fa-heart-pulse">
+        </i>
+       </span>
+       <span class="font-semibold tracking-wide">
+        Patient Portal
+       </span>
+      </a>
+     </div>
+     <div class="hidden md:flex items-center gap-4 flex-1 justify-center">
+      <div class="w-full max-w-md relative">
+       <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/70">
+       </i>
+       <input class="w-full pl-9 pr-3 py-2 rounded-md bg-white/20 placeholder-white/70 focus:bg-white/30 focus:outline-none" id="headerSearch" placeholder="Search your cases (symptom, status, ID)..." type="search"/>
+      </div>
+     </div>
+     <div class="flex items-center gap-2">
+      <a class="hidden sm:inline-flex px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./new_diagnosis_page.html">
+       Start New Diagnosis
+      </a>
+      <button aria-label="Notifications" class="p-2 rounded-md hover:bg-white/20" id="notifBtn" title="Notifications">
+       <i class="fa-regular fa-bell">
+       </i>
+      </button>
+      <button aria-label="Messages" class="p-2 rounded-md hover:bg-white/20" title="Messages">
+       <i class="fa-regular fa-envelope">
+       </i>
+      </button>
+      <div class="relative">
+       <button class="inline-flex items-center gap-2 px-2 py-2 rounded-md hover:bg-white/20" id="profileMenuBtn">
+        <i class="fa-regular fa-user">
+        </i>
+        <span class="hidden sm:inline">
+         Profile
+        </span>
+        <i class="fa-solid fa-chevron-down text-xs">
+        </i>
+       </button>
+       <div class="absolute right-0 mt-2 w-44 bg-white text-gray-700 rounded-md shadow-lg overflow-hidden hidden" id="profileMenu">
+        <a class="block px-4 py-2 hover:bg-gray-100" href="./settings_page.html">
+         Settings
+        </a>
+        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='./login_page.html'">
+         Logout
+        </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+    const pb = document.getElementById('profileMenuBtn');
+    const pm = document.getElementById('profileMenu');
+    if (pb && pm) {
+        pb.addEventListener('click', () => pm.classList.toggle('hidden'));
+    }
+    document.addEventListener('click', (e) => {
+        const pm = document.getElementById('profileMenu');
+        const pb = document.getElementById('profileMenuBtn');
+        if (pm && !pm.classList.contains('hidden') && !pb.contains(e.target) && !pm.contains(e.target)) {
+            pm.classList.add('hidden');
+        }
+    });
+})();
+   </script>
+  </header>
+  <!-- Sidebar (common component) -->
+  <aside class="mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 text-gray-700">
+    <p class="px-3 pb-2 text-xs uppercase tracking-wide text-gray-500">
+     Overview
+    </p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF]" href="./patient_dashboard.html">
+     <i class="fa-solid fa-gauge text-[#008080]">
+     </i>
+     <span>
+      Dashboard
+     </span>
+    </a>
+    <details class="group mt-2">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-stethoscope text-[#008080]">
+      </i>
+      <span>
+       Diagnosis
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./new_diagnosis_page.html">
+       Start New Diagnosis
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./case_details_page.html">
+       View Case Details
+      </a>
+     </div>
+    </details>
+    <details class="group mt-2">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-clock-rotate-left text-[#008080]">
+      </i>
+      <span>
+       History
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./patient_dashboard.html#history">
+       All Past Diagnoses
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./patient_dashboard.html#shared">
+       Shared with Doctor
+      </a>
+     </div>
+    </details>
+    <div class="mt-4 border-t pt-4">
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./settings_page.html">
+      <i class="fa-solid fa-gear text-[#008080]">
+      </i>
+      <span>
+       Settings
+      </span>
+     </a>
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./about_page.html">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span>
+       Support
+      </span>
+     </a>
+    </div>
+   </nav>
+  </aside>
+  <!-- Right Notification Drawer -->
+  <aside class="notification-drawer fixed right-0 top-16 z-40 h-[calc(100vh-64px)] w-80 bg-white border-l border-gray-200 shadow-lg" id="notificationDrawer">
+   <div class="h-full flex flex-col">
+    <div class="px-4 py-3 border-b flex items-center justify-between">
+     <h3 class="font-semibold">
+      Notifications
+     </h3>
+     <button aria-label="Close" class="p-2 rounded hover:bg-gray-100" id="notifClose">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <div class="p-4 space-y-3 overflow-y-auto">
+     <div class="flex items-start gap-3">
+      <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 text-yellow-700">
+       <i class="fa-solid fa-triangle-exclamation">
+       </i>
+      </span>
+      <div>
+       <p class="text-sm">
+        DX-1042 is pending doctor review.
+       </p>
+       <time class="text-xs text-gray-500">
+        Oct 10, 2025
+       </time>
+      </div>
+     </div>
+     <div class="flex items-start gap-3">
+      <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-700">
+       <i class="fa-solid fa-circle-check">
+       </i>
+      </span>
+      <div>
+       <p class="text-sm">
+        DX-1005 confirmed by Dr. Singh.
+       </p>
+       <time class="text-xs text-gray-500">
+        Sep 11, 2025
+       </time>
+      </div>
+     </div>
+     <div class="flex items-start gap-3">
+      <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-700">
+       <i class="fa-solid fa-ban">
+       </i>
+      </span>
+      <div>
+       <p class="text-sm">
+        DX-1021 was rejected.
+       </p>
+       <time class="text-xs text-gray-500">
+        Sep 28, 2025
+       </time>
+      </div>
+     </div>
+    </div>
+   </div>
+  </aside>
+  <!-- Main Content -->
+  <main class="pt-20 md:ml-64 min-h-screen main-container">
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Welcome Header -->
+    <div class="card rounded-lg shadow-sm border border-gray-200 p-6">
+     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-4">
+       <img alt="Patient Avatar" class="h-16 w-16 rounded-full object-cover" onerror="this.onerror=null;this.src='https://picsum.photos/id/237/72/72'" src="./assets/user-avatar.png"/>
+       <div>
+        <h1 class="text-2xl font-semibold section-title" id="welcomeMessage">
+         Welcome back, Patient
+        </h1>
+        <p class="text-gray-600">
+         Manage your health information and review your case history.
+        </p>
+       </div>
+      </div>
+      <div class="flex items-center gap-3">
+       <button class="btn-secondary px-4 py-2 rounded-md" id="accessibilityToggle" title="Toggle Accessibility Mode">
+        <i class="fa-solid fa-universal-access mr-2">
+        </i>
+        Accessibility Mode
+       </button>
+       <button class="btn-info px-4 py-2 rounded-md bg-[#0ea5e9] text-white hover:bg-[#0284c7]" id="voiceAssistBtn" title="Listen to summary">
+        <i class="fa-solid fa-headphones mr-2">
+        </i>
+        Voice Assist
+       </button>
+       <button class="btn-primary px-4 py-2 rounded-md" id="startDiagnosisBtn" title="Start a new diagnosis">
+        <i class="fa-solid fa-stethoscope mr-2">
+        </i>
+        Start New Diagnosis
+       </button>
+      </div>
+     </div>
+    </div>
+    <!-- Quick Stats & Chart -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+     <div class="card rounded-lg shadow-sm border border-gray-200 p-4">
+      <div class="flex items-center justify-between">
+       <div>
+        <p class="text-gray-500">
+         Pending Review
+        </p>
+        <p class="text-2xl font-semibold" id="statPending">
+         --
+        </p>
+       </div>
+       <span class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-yellow-100 text-yellow-700">
+        <i class="fa-solid fa-hourglass-half">
+        </i>
+       </span>
+      </div>
+     </div>
+     <div class="card rounded-lg shadow-sm border border-gray-200 p-4">
+      <div class="flex items-center justify-between">
+       <div>
+        <p class="text-gray-500">
+         Confirmed
+        </p>
+        <p class="text-2xl font-semibold" id="statConfirmed">
+         --
+        </p>
+       </div>
+       <span class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-green-100 text-green-700">
+        <i class="fa-solid fa-circle-check">
+        </i>
+       </span>
+      </div>
+     </div>
+     <div class="card rounded-lg shadow-sm border border-gray-200 p-4">
+      <div class="flex items-center justify-between">
+       <div>
+        <p class="text-gray-500">
+         Rejected
+        </p>
+        <p class="text-2xl font-semibold" id="statRejected">
+         --
+        </p>
+       </div>
+       <span class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-red-100 text-red-700">
+        <i class="fa-solid fa-ban">
+        </i>
+       </span>
+      </div>
+     </div>
+    </div>
+    <div class="card rounded-lg shadow-sm border border-gray-200 p-4 mt-4">
+     <h3 class="font-semibold mb-2">
+      Diagnoses Over Time
+     </h3>
+     <div class="w-full" id="diagnosisChart">
+     </div>
+    </div>
+    <!-- User Views Tabs -->
+    <div class="card rounded-lg shadow-sm border border-gray-200 p-4 mt-6">
+     <div class="flex items-center gap-2 border-b">
+      <button class="px-3 py-2 border-b-2 border-[#0000FF] text-[#0000FF]" id="tabAll">
+       All Cases
+      </button>
+      <button class="px-3 py-2 text-gray-600 hover:text-gray-800" id="tabShared">
+       Shared with Doctor
+      </button>
+     </div>
+     <p class="text-sm text-gray-600 mt-2">
+      Switch views to focus on cases shared with your doctor.
+     </p>
+    </div>
+    <!-- Diagnosis History List -->
+    <section class="card rounded-lg shadow-sm border border-gray-200 p-6 mt-6" id="history">
+     <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold section-title">
+       Your Diagnosis History
+      </h2>
+      <div class="flex items-center gap-2">
+       <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+        </i>
+        <input class="w-64 pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200" id="historySearch" placeholder="Search (ID, symptom, status)" type="search"/>
+       </div>
+       <select class="form-select border border-gray-300 rounded-md py-2 px-3" id="statusFilter">
+        <option value="">
+         All Statuses
+        </option>
+        <option value="Pending Doctor Review">
+         Pending Doctor Review
+        </option>
+        <option value="Confirmed">
+         Confirmed
+        </option>
+        <option value="Rejected">
+         Rejected
+        </option>
+       </select>
+      </div>
+     </div>
+     <div class="mt-4" id="historyLoading">
+      <div class="animate-pulse grid grid-cols-1 gap-2">
+       <div class="h-6 bg-gray-200 rounded">
+       </div>
+       <div class="h-6 bg-gray-200 rounded">
+       </div>
+       <div class="h-6 bg-gray-200 rounded">
+       </div>
+      </div>
+     </div>
+     <div class="mt-4 hidden" id="historyEmpty">
+      <div class="alert-info border rounded p-4">
+       You have no diagnosis history yet. Start a new diagnosis to begin.
+      </div>
+     </div>
+     <div class="mt-4 hidden" id="historyTableWrap">
+      <div class="overflow-x-auto">
+       <table class="min-w-full table-sortable">
+        <thead class="table-header">
+         <tr class="text-left">
+          <th class="px-3 py-2" data-sort="caseId">
+           Case ID
+           <i class="fa-solid fa-sort text-gray-400 ml-1">
+           </i>
+           <span class="sr-only">
+            Sort by Case ID
+           </span>
+          </th>
+          <th class="px-3 py-2" data-sort="date">
+           Date
+           <i class="fa-solid fa-sort text-gray-400 ml-1">
+           </i>
+           <span class="sr-only">
+            Sort by Date
+           </span>
+          </th>
+          <th class="px-3 py-2">
+           Primary Symptom
+          </th>
+          <th class="px-3 py-2">
+           Status
+          </th>
+          <th class="px-3 py-2">
+           Action
+          </th>
+         </tr>
+        </thead>
+        <tbody class="table-striped" id="historyTbody">
+        </tbody>
+       </table>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+       <p class="text-sm text-gray-600" id="paginationInfo">
+        Showing 0–0 of 0
+       </p>
+       <div class="flex items-center gap-2">
+        <button class="pagination-btn px-3 py-1 rounded border border-gray-300 disabled:opacity-50" disabled="" id="prevPage">
+         Prev
+        </button>
+        <button class="pagination-btn px-3 py-1 rounded border border-gray-300 disabled:opacity-50" disabled="" id="nextPage">
+         Next
+        </button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </section>
+  </main>
+  <!-- Help Assistant Floating -->
+  <div class="fixed bottom-4 right-4 z-40">
+   <button class="px-4 py-2 rounded-full bg-[#008080] text-white shadow hover:bg-[#008080]/80" id="helpAssistantToggle" title="Open Help Assistant">
+    <i class="fa-solid fa-circle-question mr-2">
+    </i>
+    Help
+   </button>
+   <div class="help-assistant-panel mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-lg p-4" id="helpAssistantPanel">
+    <div class="flex items-center justify-between">
+     <h4 class="font-semibold">
+      Assistant
+     </h4>
+     <button aria-label="Close" class="p-2 rounded hover:bg-gray-100" id="helpAssistantClose">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <p class="text-sm text-gray-600 mt-2">
+     Need help? Start a diagnosis or review your history. I can guide you step-by-step.
+    </p>
+    <div class="mt-3 flex flex-col gap-2">
+     <button class="btn-primary px-3 py-2 rounded" onclick="location.href='./new_diagnosis_page.html'">
+      Start Diagnosis
+     </button>
+     <button class="btn-outline px-3 py-2 rounded" onclick="location.href='./patient_dashboard.html#history'">
+      View History
+     </button>
+    </div>
+   </div>
+  </div>
+  <!-- Footer (common component) -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      Patient Portal
+     </span>
+    </div>
+    <div class="flex items-center gap-4">
+     <a class="px-3 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/80 text-sm" href="./new_diagnosis_page.html">
+      Start Diagnosis
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      Terms
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      Privacy
+     </a>
+    </div>
+   </div>
+  </footer>
+  <script>
+   // Mock user data and records
+const userData = {
+    role: 'Patient',
+    firstName: 'Alex'
+};
+const diagnosisRecords = [{
+    caseId: 'DX-1042',
+    date: '2025-10-10',
+    primarySymptom: 'Headache',
+    status: 'Pending Doctor Review',
+    shared: true
+}, {
+    caseId: 'DX-1035',
+    date: '2025-10-05',
+    primarySymptom: 'Fever',
+    status: 'Confirmed',
+    shared: true
+}, {
+    caseId: 'DX-1021',
+    date: '2025-09-28',
+    primarySymptom: 'Chest Pain',
+    status: 'Rejected',
+    shared: false
+}, {
+    caseId: 'DX-1019',
+    date: '2025-09-20',
+    primarySymptom: 'Cough',
+    status: 'Pending Doctor Review',
+    shared: false
+}, {
+    caseId: 'DX-1005',
+    date: '2025-09-10',
+    primarySymptom: 'Abdominal Pain',
+    status: 'Confirmed',
+    shared: true
+}, {
+    caseId: 'DX-0999',
+    date: '2025-08-30',
+    primarySymptom: 'Back Pain',
+    status: 'Pending Doctor Review',
+    shared: false
+}];
+
+const state = {
+    isLoading: true,
+    error: null,
+    page: 1,
+    pageSize: 6,
+    sortKey: null,
+    sortDir: 'asc',
+    filterStatus: '',
+    search: '',
+    view: 'all' // 'all' | 'shared'
+};
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', () => {
+    // Personalized welcome
+    const welcomeEl = document.getElementById('welcomeMessage');
+    if (welcomeEl && userData && userData.firstName) {
+        welcomeEl.textContent = `Welcome back, ${userData.firstName}`;
+    }
+
+    // Accessibility mode persistence
+    const accPref = localStorage.getItem('pd_accessibility');
+    if (accPref === 'on') document.body.classList.add('accessibility-mode');
+
+    // Load history
+    setTimeout(() => {
+        state.isLoading = false;
+        renderHistory();
+        renderStats();
+        renderChart();
+    }, 600);
+
+    // Search & filter events
+    const headerSearch = document.getElementById('headerSearch');
+    const historySearch = document.getElementById('historySearch');
+    const statusFilter = document.getElementById('statusFilter');
+    [headerSearch, historySearch].forEach(inp => inp && inp.addEventListener('input', (e) => {
+        state.search = e.target.value.trim().toLowerCase();
+        state.page = 1;
+        renderHistory();
+    }));
+    statusFilter && statusFilter.addEventListener('change', (e) => {
+        state.filterStatus = e.target.value;
+        state.page = 1;
+        renderHistory();
+    });
+
+    // Sorting
+    document.querySelectorAll('.table-sortable th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const key = th.getAttribute('data-sort');
+            if (state.sortKey === key) {
+                state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.sortKey = key;
+                state.sortDir = 'asc';
+            }
+            renderHistory();
+        });
+    });
+
+    // Tabs
+    document.getElementById('tabAll')?.addEventListener('click', () => {
+        state.view = 'all';
+        setActiveTab('tabAll', 'tabShared');
+        renderHistory();
+    });
+    document.getElementById('tabShared')?.addEventListener('click', () => {
+        state.view = 'shared';
+        setActiveTab('tabShared', 'tabAll');
+        renderHistory();
+    });
+
+    // Pagination
+    document.getElementById('prevPage')?.addEventListener('click', () => {
+        if (state.page > 1) {
+            state.page--;
+            renderHistory();
+        }
+    });
+    document.getElementById('nextPage')?.addEventListener('click', () => {
+        state.page++;
+        renderHistory();
+    });
+
+    // Accessibility toggle
+    document.getElementById('accessibilityToggle')?.addEventListener('click', () => {
+        document.body.classList.toggle('accessibility-mode');
+        localStorage.setItem('pd_accessibility', document.body.classList.contains('accessibility-mode') ? 'on' : 'off');
+    });
+
+    // Voice Assist
+    document.getElementById('voiceAssistBtn')?.addEventListener('click', voiceAssist);
+
+    // Start Diagnosis CTA (require patient role)
+    document.getElementById('startDiagnosisBtn')?.addEventListener('click', () => {
+        if (userData.role !== 'Patient') return;
+        Swal.fire({
+            title: 'Start New Diagnosis',
+            text: 'We will guide you through a quick symptom check.',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Proceed',
+            cancelButtonText: 'Cancel'
+        }).then(res => {
+            if (res.isConfirmed) window.location.href = './new_diagnosis_page.html';
+        });
+    });
+
+    // Help Assistant toggle
+    const helpPanel = document.getElementById('helpAssistantPanel');
+    document.getElementById('helpAssistantToggle')?.addEventListener('click', () => helpPanel.classList.add('open'));
+    document.getElementById('helpAssistantClose')?.addEventListener('click', () => helpPanel.classList.remove('open'));
+
+    // Notification drawer
+    const notifDrawer = document.getElementById('notificationDrawer');
+    document.getElementById('notifBtn')?.addEventListener('click', () => notifDrawer.classList.add('open'));
+    document.getElementById('notifClose')?.addEventListener('click', () => notifDrawer.classList.remove('open'));
+
+    // Onboarding coach marks (once)
+    if (!localStorage.getItem('pd_coach_shown')) {
+        const btn = document.getElementById('startDiagnosisBtn');
+        btn?.classList.add('coachmark-highlight');
+        Swal.fire({
+            title: 'Welcome to your Dashboard',
+            html: '<div class="text-left">\
+                  <p class="mb-2">• Start a new diagnosis using the teal buttons.</p>\
+                  <p class="mb-2">• Filter and sort your history to find past cases.</p>\
+                  <p class="mb-2">• Use the accessibility and voice assist for easier navigation.</p>\
+                </div>',
+            icon: 'info',
+            confirmButtonText: 'Got it',
+        }).then(() => btn?.classList.remove('coachmark-highlight'));
+        localStorage.setItem('pd_coach_shown', '1');
+    }
+});
+
+function setActiveTab(activeId, inactiveId) {
+    const a = document.getElementById(activeId),
+        i = document.getElementById(inactiveId);
+    if (!a || !i) return;
+    a.classList.add('border-b-2', 'border-[#0000FF]', 'text-[#0000FF]');
+    i.classList.remove('border-b-2', 'border-[#0000FF]', 'text-[#0000FF]');
+    i.classList.add('text-gray-600');
+}
+
+function renderStats() {
+    const data = filteredRecords();
+    const pending = data.filter(r => r.status === 'Pending Doctor Review').length;
+    const confirmed = data.filter(r => r.status === 'Confirmed').length;
+    const rejected = data.filter(r => r.status === 'Rejected').length;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statConfirmed').textContent = confirmed;
+    document.getElementById('statRejected').textContent = rejected;
+}
+
+function renderChart() {
+    const months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+    const countsPending = [1, 1, 2, 2, 1];
+    const countsConfirmed = [0, 1, 1, 1, 1];
+    const countsRejected = [0, 0, 0, 1, 1];
+    const options = {
+        chart: {
+            type: 'line',
+            height: 280,
+            toolbar: {
+                show: true
+            },
+            animations: {
+                enabled: true
+            }
+        },
+        series: [{
+            name: 'Pending',
+            data: countsPending
+        }, {
+            name: 'Confirmed',
+            data: countsConfirmed
+        }, {
+            name: 'Rejected',
+            data: countsRejected
+        }, ],
+        colors: ['#f59e0b', '#16a34a', '#dc2626'],
+        xaxis: {
+            categories: months
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 3
+        },
+        tooltip: {
+            shared: true,
+            intersect: false
+        },
+        legend: {
+            position: 'top'
+        },
+        responsive: [{
+            breakpoint: 768,
+            options: {
+                chart: {
+                    height: 240
+                }
+            }
+        }]
+    };
+    const chart = new ApexCharts(document.querySelector('#diagnosisChart'), options);
+    chart.render();
+}
+
+function filteredRecords() {
+    let data = diagnosisRecords.slice();
+    if (state.view === 'shared') data = data.filter(r => r.shared);
+    if (state.filterStatus) data = data.filter(r => r.status === state.filterStatus);
+    if (state.search) {
+        data = data.filter(r =>
+            r.caseId.toLowerCase().includes(state.search) ||
+            r.primarySymptom.toLowerCase().includes(state.search) ||
+            r.status.toLowerCase().includes(state.search)
+        );
+    }
+    if (state.sortKey) {
+        data.sort((a, b) => {
+            let av = a[state.sortKey],
+                bv = b[state.sortKey];
+            if (state.sortKey === 'date') {
+                av = new Date(av);
+                bv = new Date(bv);
+            }
+            if (av < bv) return state.sortDir === 'asc' ? -1 : 1;
+            if (av > bv) return state.sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+    return data;
+}
+
+function renderHistory() {
+    const loadingEl = document.getElementById('historyLoading');
+    const emptyEl = document.getElementById('historyEmpty');
+    const tableWrap = document.getElementById('historyTableWrap');
+    const tbody = document.getElementById('historyTbody');
+    const pageInfo = document.getElementById('paginationInfo');
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+
+    if (state.isLoading) {
+        loadingEl.classList.remove('hidden');
+        emptyEl.classList.add('hidden');
+        tableWrap.classList.add('hidden');
+        return;
+    }
+
+    const data = filteredRecords();
+    loadingEl.classList.add('hidden');
+
+    if (data.length === 0) {
+        emptyEl.classList.remove('hidden');
+        tableWrap.classList.add('hidden');
+        pageInfo.textContent = 'Showing 0–0 of 0';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        return;
+    }
+
+    emptyEl.classList.add('hidden');
+    tableWrap.classList.remove('hidden');
+
+    const start = (state.page - 1) * state.pageSize;
+    const end = start + state.pageSize;
+    const slice = data.slice(start, end);
+    tbody.innerHTML = slice.map(r => historyRowHTML(r)).join('');
+    pageInfo.textContent = `Showing ${Math.min(start+1, data.length)}–${Math.min(end, data.length)} of ${data.length}`;
+    prevBtn.disabled = state.page === 1;
+    nextBtn.disabled = end >= data.length;
+
+    // Row click navigation
+    Array.from(document.querySelectorAll('.history-row')).forEach(row => {
+        row.addEventListener('click', () => {
+            const id = row.getAttribute('data-id');
+            window.location.href = `./case_details_page.html?caseId=${encodeURIComponent(id)}`;
+        });
+    });
+}
+
+function historyRowHTML(r) {
+    const badge = statusBadge(r.status);
+    const dateStr = new Date(r.date).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+    return `
+        <tr class="table-row hover:bg-gray-50 cursor-pointer history-row" data-id="${r.caseId}" title="Click to view details">
+          <td class="px-3 py-2 font-medium">${r.caseId}</td>
+          <td class="px-3 py-2">${dateStr}</td>
+          <td class="px-3 py-2">${r.primarySymptom}</td>
+          <td class="px-3 py-2">${badge}</td>
+          <td class="px-3 py-2">
+            <a href="./case_details_page.html?caseId=${encodeURIComponent(r.caseId)}" class="text-[#0000FF] hover:underline">View Details</a>
+          </td>
+        </tr>
+      `;
+}
+
+function statusBadge(status) {
+    if (status === 'Pending Doctor Review') {
+        return '<span class="badge-warning inline-block px-2 py-1 rounded">Pending Doctor Review</span>';
+    } else if (status === 'Confirmed') {
+        return '<span class="badge-success inline-block px-2 py-1 rounded">Confirmed</span>';
+    } else {
+        return '<span class="badge-danger inline-block px-2 py-1 rounded">Rejected</span>';
+    }
+}
+
+function voiceAssist() {
+    try {
+        const summary = buildSummaryText();
+        const utter = new SpeechSynthesisUtterance(summary);
+        utter.rate = 1;
+        utter.pitch = 1;
+        utter.lang = 'en-US';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+    } catch (e) {
+        Swal.fire({
+            title: 'Voice Assist Unavailable',
+            text: 'Your browser may not support speech synthesis.',
+            icon: 'warning'
+        });
+    }
+}
+
+function buildSummaryText() {
+    const data = filteredRecords();
+    const pending = data.filter(r => r.status === 'Pending Doctor Review').length;
+    const confirmed = data.filter(r => r.status === 'Confirmed').length;
+    const rejected = data.filter(r => r.status === 'Rejected').length;
+    return `Hello ${userData.firstName}. You have ${pending} pending cases, ${confirmed} confirmed, and ${rejected} rejected. Use the filters to refine your history.`;
+}
+  </script>
+ </body>
+</html>

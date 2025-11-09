@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   New Diagnosis Page
+  </title>
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <script>
+   tailwind.config = {
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: ['Poppins', 'ui-sans-serif', 'system-ui']
+            },
+            colors: {
+                primaryBlue: '#0000FF',
+                primaryTeal: '#008080',
+            }
+        }
+    }
+}
+  </script>
+  <!-- Font Awesome 6 -->
+  <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" referrerpolicy="no-referrer" rel="stylesheet"/>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+  </script>
+  <!-- ApexCharts -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+  </script>
+  <!-- Site Theme CSS -->
+  <link href="style.css" rel="stylesheet"/>
+  <!-- Page-specific CSS -->
+  <link href="new_diagnosis_page.css" rel="stylesheet"/>
+  <style>
+   /* Page-specific minimal baseline to complement style.css */
+    :root { --accent-blue: #0000FF; --accent-teal: #008080; }
+    body { font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji'; font-size: 18px; line-height: 1.6; }
+
+    /* Wizard progress */
+    .wizard-progress { counter-reset: step; }
+    .wizard-step { position: relative; display: flex; align-items: center; gap: 12px; }
+    .wizard-step .circle { width: 32px; height: 32px; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; background: #e5e7eb; color: #374151; }
+    .wizard-step.active .circle { background: rgba(0,0,255,0.12); color: var(--accent-blue); border: 2px solid var(--accent-blue); }
+    .wizard-step.completed .circle { background: #16a34a; color: #fff; }
+    .wizard-connector { height: 2px; background: #e5e7eb; flex: 1; }
+    .wizard-connector.completed { background: #16a34a; }
+
+    /* Sticky action bar */
+    .sticky-action-bar { position: sticky; bottom: 0; z-index: 20; backdrop-filter: blur(6px); }
+
+    /* Autocomplete dropdown */
+    .suggestions { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-height: 240px; overflow: auto; z-index: 40; }
+    .suggestion-item { padding: 10px 12px; cursor: pointer; }
+    .suggestion-item:hover, .suggestion-item[aria-selected="true"] { background: #f3f4f6; }
+
+    /* Dropzone */
+    .dropzone { border: 2px dashed #cbd5e1; border-radius: 12px; transition: all .2s ease; }
+    .dropzone.dragover { border-color: var(--accent-blue); background: rgba(0,0,255,0.05); }
+
+    /* Slide-in Notification Panel */
+    #notificationPanel { position: fixed; top: 64px; right: 0; width: 360px; max-width: 90vw; height: calc(100vh - 64px); background: #fff; border-left: 1px solid #e5e7eb; box-shadow: -8px 0 24px rgba(0,0,0,0.08); transform: translateX(100%); transition: transform .25s ease; z-index: 60; }
+    #notificationPanel.open { transform: translateX(0); }
+
+    /* Floating Help Assistant */
+    #helpAssistant { position: fixed; right: 16px; bottom: 16px; z-index: 60; }
+    #helpDrawer { position: fixed; right: 16px; bottom: 76px; width: 340px; max-width: 92vw; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 16px 48px rgba(0,0,0,0.15); transform: translateY(16px); opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 60; }
+    #helpDrawer.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+    /* Accessibility Mode */
+    .accessibility-mode body, .accessibility-mode { font-size: 20px; line-height: 1.7; }
+    .accessibility-mode .high-contrast { filter: contrast(1.2) saturate(1.1); }
+    .accessibility-mode .focus-ring:focus { outline: 3px solid var(--accent-blue); outline-offset: 2px; }
+
+    /* Tooltips base via title attribute hint (for demo) */
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 6px 10px; border-radius: 6px; white-space: nowrap; font-size: 12px; opacity: 0.95; }
+
+    /* Ensure main layout respects fixed header and sidebar width */
+    main { min-height: calc(100vh - 64px - 80px); }
+  </style>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="bg-gray-50 text-gray-800">
+  <!-- Header (Common Component) -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <div class="flex items-center gap-3">
+      <button class="md:hidden inline-flex items-center px-2 py-2 rounded-md bg-white/20" id="sidebarToggle">
+       <i class="fa-solid fa-bars">
+       </i>
+      </button>
+      <a class="flex items-center gap-2" href="./patient_dashboard.html">
+       <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+        <i class="fa-solid fa-heart-pulse">
+        </i>
+       </span>
+       <span class="font-semibold tracking-wide">
+        Patient Portal
+       </span>
+      </a>
+     </div>
+     <div class="hidden md:flex items-center gap-4 flex-1 justify-center">
+      <div class="w-full max-w-md relative">
+       <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/70">
+       </i>
+       <input class="w-full pl-9 pr-3 py-2 rounded-md bg-white/20 placeholder-white/70 focus:bg-white/30 focus:outline-none" placeholder="Search your cases (symptom, status, ID)..." type="search"/>
+      </div>
+     </div>
+     <div class="flex items-center gap-2">
+      <a class="hidden sm:inline-flex px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./new_diagnosis_page.html">
+       Start New Diagnosis
+      </a>
+      <button aria-label="Notifications" class="p-2 rounded-md hover:bg-white/20" id="notifToggle">
+       <i class="fa-regular fa-bell">
+       </i>
+      </button>
+      <button aria-label="Messages" class="p-2 rounded-md hover:bg-white/20">
+       <i class="fa-regular fa-envelope">
+       </i>
+      </button>
+      <div class="relative">
+       <button class="inline-flex items-center gap-2 px-2 py-2 rounded-md hover:bg-white/20" id="profileMenuBtn">
+        <i class="fa-regular fa-user">
+        </i>
+        <span class="hidden sm:inline">
+         Profile
+        </span>
+        <i class="fa-solid fa-chevron-down text-xs">
+        </i>
+       </button>
+       <div class="absolute right-0 mt-2 w-44 bg-white text-gray-700 rounded-md shadow-lg overflow-hidden hidden" id="profileMenu">
+        <a class="block px-4 py-2 hover:bg-gray-100" href="./settings_page.html">
+         Settings
+        </a>
+        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='./login_page.html'">
+         Logout
+        </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+    const pb = document.getElementById('profileMenuBtn');
+    const pm = document.getElementById('profileMenu');
+    if (pb && pm) {
+        pb.addEventListener('click', () => pm.classList.toggle('hidden'));
+    }
+    document.addEventListener('click', (e) => {
+        const pm = document.getElementById('profileMenu');
+        const pb = document.getElementById('profileMenuBtn');
+        if (pm && !pm.classList.contains('hidden') && !pb.contains(e.target) && !pm.contains(e.target)) {
+            pm.classList.add('hidden');
+        }
+    });
+})();
+   </script>
+  </header>
+  <!-- Sidebar (Common Component) -->
+  <aside class="mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 text-gray-700">
+    <p class="px-3 pb-2 text-xs uppercase tracking-wide text-gray-500">
+     Overview
+    </p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./patient_dashboard.html">
+     <i class="fa-solid fa-gauge text-[#008080]">
+     </i>
+     <span>
+      Dashboard
+     </span>
+    </a>
+    <details class="group mt-2" open="">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-stethoscope text-[#008080]">
+      </i>
+      <span>
+       Diagnosis
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md bg-[#0000FF]/10 text-[#0000FF]" href="./new_diagnosis_page.html">
+       Start New Diagnosis
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./case_details_page.html">
+       View Case Details
+      </a>
+     </div>
+    </details>
+    <details class="group mt-2">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-clock-rotate-left text-[#008080]">
+      </i>
+      <span>
+       History
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./patient_dashboard.html#history">
+       All Past Diagnoses
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./patient_dashboard.html#shared">
+       Shared with Doctor
+      </a>
+     </div>
+    </details>
+    <div class="mt-4 border-t pt-4">
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./settings_page.html">
+      <i class="fa-solid fa-gear text-[#008080]">
+      </i>
+      <span>
+       Settings
+      </span>
+     </a>
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./about_page.html">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span>
+       Support
+      </span>
+     </a>
+    </div>
+   </nav>
+  </aside>
+  <!-- Notification Panel -->
+  <aside aria-label="Notifications" class="bg-white" id="notificationPanel">
+   <div class="p-4 border-b flex items-center justify-between">
+    <div class="flex items-center gap-2">
+     <i class="fa-regular fa-bell text-primaryBlue">
+     </i>
+     <h3 class="font-semibold">
+      Notifications
+     </h3>
+    </div>
+    <button class="text-gray-500 hover:text-gray-700" id="notifClose">
+     <i class="fa-solid fa-xmark">
+     </i>
+    </button>
+   </div>
+   <div class="p-4 space-y-3 overflow-y-auto h-[calc(100%-57px)]">
+    <div class="p-3 rounded-md bg-blue-50 text-blue-800 border border-blue-200 flex items-start gap-2">
+     <i class="fa-solid fa-circle-info mt-1">
+     </i>
+     <div>
+      <p class="font-medium">
+       Tip
+      </p>
+      <p class="text-sm">
+       Be as specific as possible when describing your primary symptom.
+      </p>
+     </div>
+    </div>
+    <div class="p-3 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200 flex items-start gap-2">
+     <i class="fa-solid fa-triangle-exclamation mt-1">
+     </i>
+     <div>
+      <p class="font-medium">
+       Reminder
+      </p>
+      <p class="text-sm">
+       Upload lab results if available. Supported: PDF, JPG, PNG.
+      </p>
+     </div>
+    </div>
+    <div class="p-3 rounded-md bg-green-50 text-green-800 border border-green-200 flex items-start gap-2">
+     <i class="fa-solid fa-check mt-1">
+     </i>
+     <div>
+      <p class="font-medium">
+       Autosave Enabled
+      </p>
+      <p class="text-sm">
+       We’re saving your progress locally as you go.
+      </p>
+     </div>
+    </div>
+   </div>
+  </aside>
+  <!-- Main Content -->
+  <div class="pt-16 md:pl-64">
+   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between gap-4 mb-6">
+     <div>
+      <h1 class="text-2xl sm:text-3xl font-semibold text-gray-900">
+       Start a New Diagnosis
+      </h1>
+      <p class="text-gray-600">
+       Follow the steps below to share details and get a preliminary AI analysis.
+      </p>
+     </div>
+     <div class="flex items-center gap-2">
+      <button class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-sm focus-ring" data-tip="Toggle Accessibility Mode" id="accessibilityToggle">
+       <i class="fa-solid fa-universal-access mr-1">
+       </i>
+       Accessibility
+      </button>
+      <button class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-sm focus-ring" data-tip="Narrate this step" id="voiceAssist">
+       <i class="fa-solid fa-volume-high mr-1">
+       </i>
+       Voice
+      </button>
+     </div>
+    </div>
+    <!-- Progress Indicator -->
+    <div class="wizard-progress mb-6">
+     <div class="flex items-center">
+      <div class="wizard-step active" data-step-index="0">
+       <div class="circle">
+        1
+       </div>
+       <span class="hidden sm:inline font-medium">
+        Symptoms
+       </span>
+      </div>
+      <div class="wizard-connector mx-3" data-connector-index="0">
+      </div>
+      <div class="wizard-step" data-step-index="1">
+       <div class="circle">
+        2
+       </div>
+       <span class="hidden sm:inline font-medium">
+        Details
+       </span>
+      </div>
+      <div class="wizard-connector mx-3" data-connector-index="1">
+      </div>
+      <div class="wizard-step" data-step-index="2">
+       <div class="circle">
+        3
+       </div>
+       <span class="hidden sm:inline font-medium">
+        Uploads
+       </span>
+      </div>
+      <div class="wizard-connector mx-3" data-connector-index="2">
+      </div>
+      <div class="wizard-step" data-step-index="3">
+       <div class="circle">
+        4
+       </div>
+       <span class="hidden sm:inline font-medium">
+        Review
+       </span>
+      </div>
+     </div>
+    </div>
+    <!-- Wizard Container -->
+    <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" id="diagnosisWizard">
+     <!-- Step Content -->
+     <div class="p-6 sm:p-8 min-h-[420px]" id="stepContainer">
+      <!-- Step 1: SymptomInputStep -->
+      <div class="step" data-step="0">
+       <h2 class="text-xl font-semibold mb-4">
+        Step 1: What are your main symptoms?
+       </h2>
+       <div class="space-y-5">
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1" for="primarySymptom">
+          Primary Symptom
+         </label>
+         <div class="relative">
+          <input aria-autocomplete="list" aria-expanded="false" autocomplete="off" class="form-input w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500" id="primarySymptom" placeholder="e.g., Sore throat, Headache" type="text"/>
+          <div aria-label="Symptom Suggestions" class="suggestions hidden" id="symptomSuggestions" role="listbox">
+          </div>
+         </div>
+         <p class="text-sm text-gray-500 mt-2">
+          Start typing to see common symptom suggestions.
+         </p>
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1" for="additionalSymptoms">
+          Additional Symptoms (optional)
+         </label>
+         <textarea class="form-textarea w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500" id="additionalSymptoms" placeholder="List other symptoms separated by commas" rows="3"></textarea>
+        </div>
+       </div>
+      </div>
+      <!-- Step 2: ClarifyingQuestionsStep -->
+      <div class="step hidden" data-step="1">
+       <h2 class="text-xl font-semibold mb-4">
+        Step 2: Please provide more details
+       </h2>
+       <div class="space-y-5" id="questionsContainer">
+        <!-- Dynamic questions will be injected here -->
+       </div>
+      </div>
+      <!-- Step 3: FileUploadStep -->
+      <div class="step hidden" data-step="2">
+       <h2 class="text-xl font-semibold mb-4">
+        Upload Supporting Documents (optional)
+       </h2>
+       <p class="text-gray-600 mb-4">
+        Accepted formats: PDF, JPG, PNG. Max size: 10MB per file.
+       </p>
+       <div class="dropzone p-6 text-center cursor-pointer" id="dropzone">
+        <input accept=".pdf,.jpg,.jpeg,.png" class="hidden" id="fileInput" multiple="" type="file"/>
+        <i class="fa-regular fa-file-lines text-gray-400 text-3xl">
+        </i>
+        <p class="mt-2 text-gray-700">
+         <span class="font-medium">
+          Drag &amp; drop
+         </span>
+         files here or
+         <span class="text-primaryBlue underline">
+          browse
+         </span>
+        </p>
+       </div>
+       <div class="mt-4 space-y-3" id="fileList">
+        <!-- Selected files list here -->
+       </div>
+      </div>
+      <!-- Step 4: ReviewAndSubmitStep -->
+      <div class="step hidden" data-step="3">
+       <h2 class="text-xl font-semibold mb-4">
+        Review your information
+       </h2>
+       <div class="space-y-6">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+         <h3 class="font-semibold text-gray-800 mb-2">
+          Symptoms
+         </h3>
+         <p class="text-gray-700" id="reviewPrimary">
+          <span class="font-medium">
+           Primary:
+          </span>
+          —
+         </p>
+         <p class="text-gray-700" id="reviewAdditional">
+          <span class="font-medium">
+           Additional:
+          </span>
+          —
+         </p>
+        </div>
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+         <h3 class="font-semibold text-gray-800 mb-2">
+          Answers
+         </h3>
+         <div class="text-gray-700 text-sm space-y-1" id="reviewAnswers">
+          —
+         </div>
+        </div>
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+         <h3 class="font-semibold text-gray-800 mb-2">
+          Uploaded Files
+         </h3>
+         <ul class="list-disc pl-5 text-gray-700 text-sm space-y-1" id="reviewFiles">
+          —
+         </ul>
+        </div>
+        <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+         <p class="text-yellow-800 text-sm">
+          <i class="fa-solid fa-circle-exclamation mr-2">
+          </i>
+          I understand this is a preliminary analysis for informational purposes only and is not a substitute for professional medical advice.
+         </p>
+         <label class="inline-flex items-center gap-2 mt-3 text-sm text-gray-800">
+          <input class="h-4 w-4" id="ackDisclaimer" type="checkbox"/>
+          I acknowledge the disclaimer
+         </label>
+        </div>
+       </div>
+      </div>
+     </div>
+     <!-- Sticky Actions -->
+     <div class="sticky-action-bar bg-white/90 border-t border-gray-200 p-4 flex items-center justify-between">
+      <div class="text-sm text-gray-600">
+       Need help? Click the teal button at bottom-right.
+      </div>
+      <div class="flex items-center gap-2">
+       <button class="btn-secondary px-4 py-2 rounded-md disabled:opacity-50 disabled:pointer-events-none" disabled="" id="backBtn">
+        <i class="fa-solid fa-arrow-left mr-2">
+        </i>
+        Back
+       </button>
+       <button class="btn-primary px-4 py-2 rounded-md disabled:opacity-50 disabled:pointer-events-none" id="nextBtn">
+        Next
+        <i class="fa-solid fa-arrow-right ml-2">
+        </i>
+       </button>
+       <button class="btn-success px-4 py-2 rounded-md hidden disabled:opacity-50 disabled:pointer-events-none" id="submitBtn">
+        <span class="inline-flex items-center">
+         <i class="fa-solid fa-stethoscope mr-2">
+         </i>
+         Get My Preliminary Diagnosis
+        </span>
+       </button>
+      </div>
+     </div>
+    </section>
+    <!-- Onboarding Tips section (coach mark trigger) -->
+    <div aria-hidden="true" class="sr-only" id="onboardingContent">
+     Welcome to the Diagnosis Wizard. Describe your primary symptom clearly, answer follow-up questions, and optionally upload documents. You’ll review everything before submitting.
+    </div>
+   </main>
+  </div>
+  <!-- Help Assistant (Floating) -->
+  <div id="helpAssistant">
+   <button aria-label="Help Assistant" class="h-14 w-14 rounded-full bg-[#008080] text-white shadow-lg flex items-center justify-center hover:bg-[#008080]/90" data-tip="Help Assistant" id="helpToggle">
+    <i class="fa-solid fa-circle-question text-xl">
+    </i>
+   </button>
+   <div class="p-4" id="helpDrawer">
+    <div class="flex items-start justify-between">
+     <div class="flex items-center gap-2">
+      <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#0000FF]/10 text-[#0000FF]">
+       <i class="fa-solid fa-heart-pulse">
+       </i>
+      </span>
+      <h4 class="font-semibold">
+       Need a hand?
+      </h4>
+     </div>
+     <button class="text-gray-500 hover:text-gray-700" id="helpClose">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <div class="mt-3 text-sm text-gray-700 space-y-2">
+     <p>
+      • Be specific about symptoms: onset, duration, severity.
+     </p>
+     <p>
+      • Upload recent test results for better context.
+     </p>
+     <p>
+      • Your progress is autosaved in your browser.
+     </p>
+    </div>
+    <div class="mt-4 p-3 border rounded-md bg-gray-50 text-sm flex items-start gap-3">
+     <img alt="Help illustration" class="rounded object-cover h-12 w-12" onerror="this.onerror=null;this.src='https://picsum.photos/seed/aid/60/60'" src="https://picsum.photos/seed/health/60/60"/>
+     <div>
+      <p class="font-medium">
+       Privacy
+      </p>
+      <p>
+       Your data is encrypted during upload.
+      </p>
+     </div>
+    </div>
+    <div class="mt-4 flex items-center justify-end gap-2">
+     <a class="text-primaryBlue hover:underline text-sm" href="./about_page.html">
+      Learn more
+     </a>
+     <button class="px-3 py-2 rounded-md bg-[#0000FF] text-white hover:bg-[#0000FF]/90 text-sm" id="contactSupport">
+      <i class="fa-regular fa-envelope mr-1">
+      </i>
+      Contact Support
+     </button>
+    </div>
+   </div>
+  </div>
+  <!-- Footer (Common Component) -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      Patient Portal
+     </span>
+    </div>
+    <div class="flex items-center gap-4">
+     <a class="px-3 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/80 text-sm" href="./new_diagnosis_page.html">
+      Start Diagnosis
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      Terms
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      Privacy
+     </a>
+    </div>
+   </div>
+  </footer>
+  <script>
+   // Wizard State
+const wizardState = {
+    currentStep: 0,
+    formData: {
+        primarySymptom: '',
+        additionalSymptoms: '',
+        answers: {},
+        files: []
+    },
+    isLoading: false,
+    error: null
+};
+
+// Elements
+const steps = Array.from(document.querySelectorAll('.step'));
+const progressSteps = Array.from(document.querySelectorAll('.wizard-step'));
+const connectors = Array.from(document.querySelectorAll('.wizard-connector'));
+const backBtn = document.getElementById('backBtn');
+const nextBtn = document.getElementById('nextBtn');
+const submitBtn = document.getElementById('submitBtn');
+
+// Accessibility and Voice
+const accessibilityToggle = document.getElementById('accessibilityToggle');
+accessibilityToggle.addEventListener('click', () => {
+    document.documentElement.classList.toggle('accessibility-mode');
+    Swal.fire({
+        icon: 'success',
+        title: 'Accessibility Mode',
+        text: document.documentElement.classList.contains('accessibility-mode') ? 'Enabled larger text and higher contrast.' : 'Disabled accessibility adjustments.',
+        timer: 1800,
+        showConfirmButton: false
+    });
+});
+
+const voiceAssist = document.getElementById('voiceAssist');
+voiceAssist.addEventListener('click', () => {
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = getVoiceNarrationText(wizardState.currentStep);
+    msg.rate = 1;
+    msg.pitch = 1;
+    msg.lang = 'en-US';
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(msg);
+    } else {
+        Swal.fire({
+            icon: 'info',
+            title: 'Voice Not Supported',
+            text: 'Your browser does not support speech synthesis.'
+        });
+    }
+});
+
+function getVoiceNarrationText(step) {
+    switch (step) {
+        case 0:
+            return 'Step 1. Please describe your primary symptom. You can also add other symptoms separated by commas.';
+        case 1:
+            return 'Step 2. Answer the follow-up questions to provide more details.';
+        case 2:
+            return 'Step 3. Optionally upload documents such as lab results or images.';
+        case 3:
+            return 'Step 4. Review your information and acknowledge the disclaimer before submitting.';
+        default:
+            return 'Diagnosis wizard.';
+    }
+}
+
+// Onboarding Coach Mark
+(function showOnboardingOnce() {
+    const key = 'wizard_onboarded_v1';
+    if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, '1');
+        Swal.fire({
+            title: 'Welcome to the Diagnosis Wizard',
+            html: document.getElementById('onboardingContent').textContent,
+            icon: 'info',
+            confirmButtonText: 'Got it',
+            confirmButtonColor: '#0000FF'
+        });
+    }
+})();
+
+// Step Navigation
+function updateStepUI() {
+    steps.forEach((el, idx) => {
+        el.classList.toggle('hidden', idx !== wizardState.currentStep);
+    });
+    progressSteps.forEach((el, idx) => {
+        el.classList.remove('active', 'completed');
+        if (idx < wizardState.currentStep) {
+            el.classList.add('completed');
+        } else if (idx === wizardState.currentStep) {
+            el.classList.add('active');
+        }
+    });
+    connectors.forEach((c, idx) => c.classList.toggle('completed', idx < wizardState.currentStep));
+
+    backBtn.disabled = wizardState.currentStep === 0;
+    if (wizardState.currentStep < steps.length - 1) {
+        nextBtn.classList.remove('hidden');
+        submitBtn.classList.add('hidden');
+    } else {
+        nextBtn.classList.add('hidden');
+        submitBtn.classList.remove('hidden');
+    }
+    validateStep();
+    // Update review on step 3 load
+    if (wizardState.currentStep === 3) updateReview();
+}
+
+function nextStep() {
+    if (!validateStep()) return;
+    if (wizardState.currentStep === 1) {
+        // prepare for uploads step
+    }
+    wizardState.currentStep = Math.min(wizardState.currentStep + 1, steps.length - 1);
+    updateStepUI();
+}
+
+function prevStep() {
+    wizardState.currentStep = Math.max(wizardState.currentStep - 1, 0);
+    updateStepUI();
+}
+
+backBtn.addEventListener('click', prevStep);
+nextBtn.addEventListener('click', nextStep);
+
+// Validation
+function validateStep() {
+    let valid = true;
+    switch (wizardState.currentStep) {
+        case 0:
+            valid = !!wizardState.formData.primarySymptom.trim();
+            break;
+        case 1:
+            valid = validateQuestions();
+            break;
+        case 2:
+            valid = true; // optional
+            break;
+        case 3:
+            valid = document.getElementById('ackDisclaimer').checked;
+            break;
+    }
+    if (wizardState.currentStep < steps.length - 1) {
+        nextBtn.disabled = !valid;
+    } else {
+        submitBtn.disabled = !valid;
+    }
+    return valid;
+}
+
+// Step 1: Autocomplete logic
+const primarySymptomInput = document.getElementById('primarySymptom');
+const suggestionsEl = document.getElementById('symptomSuggestions');
+
+const SYMPTOMS = [
+    'Headache', 'Fever', 'Cough', 'Sore throat', 'Runny nose', 'Fatigue', 'Shortness of breath', 'Chest pain', 'Abdominal pain', 'Nausea', 'Vomiting', 'Diarrhea', 'Back pain', 'Dizziness', 'Rash', 'Joint pain', 'Muscle pain', 'Loss of taste', 'Loss of smell', 'Earache', 'Toothache', 'Anxiety', 'Depression', 'Insomnia'
+];
+
+let suggestionIndex = -1; // keyboard navigation
+function renderSuggestions(list) {
+    if (!list.length) {
+        suggestionsEl.classList.add('hidden');
+        suggestionsEl.innerHTML = '';
+        return;
+    }
+    suggestionsEl.innerHTML = list.map((s, i) => `<div class="suggestion-item" data-index="${i}" role="option" aria-selected="${i===suggestionIndex}">${s}</div>`).join('');
+    suggestionsEl.classList.remove('hidden');
+}
+
+function filterSymptoms(query) {
+    const q = query.toLowerCase();
+    return SYMPTOMS.filter(s => s.toLowerCase().includes(q)).slice(0, 8);
+}
+
+primarySymptomInput.addEventListener('input', (e) => {
+    const val = e.target.value || '';
+    wizardState.formData.primarySymptom = val;
+    suggestionIndex = -1;
+    if (val.trim().length === 0) {
+        renderSuggestions([]);
+        validateStep();
+        return;
+    }
+    const list = filterSymptoms(val);
+    renderSuggestions(list);
+    validateStep();
+});
+
+primarySymptomInput.addEventListener('keydown', (e) => {
+    const items = Array.from(suggestionsEl.querySelectorAll('.suggestion-item'));
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        suggestionIndex = (suggestionIndex + 1) % items.length;
+        updateSuggestionActive(items);
+    }
+    if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        suggestionIndex = (suggestionIndex - 1 + items.length) % items.length;
+        updateSuggestionActive(items);
+    }
+    if (e.key === 'Enter' && suggestionIndex >= 0) {
+        e.preventDefault();
+        selectSuggestion(items[suggestionIndex].textContent);
+    }
+    if (e.key === 'Escape') {
+        suggestionsEl.classList.add('hidden');
+    }
+});
+
+function updateSuggestionActive(items) {
+    items.forEach((el, i) => el.setAttribute('aria-selected', i === suggestionIndex));
+}
+
+suggestionsEl.addEventListener('click', (e) => {
+    const item = e.target.closest('.suggestion-item');
+    if (!item) return;
+    selectSuggestion(item.textContent);
+});
+
+function selectSuggestion(text) {
+    primarySymptomInput.value = text;
+    wizardState.formData.primarySymptom = text;
+    suggestionsEl.classList.add('hidden');
+    validateStep();
+    // Generate questions based on primary symptom
+    generateQuestions(text);
+}
+
+document.addEventListener('click', (e) => {
+    if (!suggestionsEl.contains(e.target) && e.target !== primarySymptomInput) {
+        suggestionsEl.classList.add('hidden');
+    }
+});
+
+// Additional symptoms
+const additionalSymptomsEl = document.getElementById('additionalSymptoms');
+additionalSymptomsEl.addEventListener('input', (e) => {
+    wizardState.formData.additionalSymptoms = e.target.value || '';
+});
+
+// Step 2: Dynamic Questions
+const questionsContainer = document.getElementById('questionsContainer');
+let currentQuestions = [];
+
+function generateQuestions(primary) {
+    // Mock logic: choose a set based on primary symptom category
+    const lower = (primary || '').toLowerCase();
+    if (lower.includes('throat')) {
+        currentQuestions = [{
+            id: 'q1',
+            text: 'Do you have a fever?',
+            type: 'radio',
+            options: ['Yes', 'No'],
+            required: true
+        }, {
+            id: 'q2',
+            text: 'How long have you had these symptoms?',
+            type: 'select',
+            options: ['Less than 24 hours', '1-3 days', '4-7 days', 'More than a week'],
+            required: true
+        }, {
+            id: 'q3',
+            text: 'Rate your pain level',
+            type: 'range',
+            min: 0,
+            max: 10,
+            required: false
+        }];
+    } else if (lower.includes('cough') || lower.includes('fever')) {
+        currentQuestions = [{
+            id: 'q1',
+            text: 'Is the cough dry or productive?',
+            type: 'radio',
+            options: ['Dry', 'Productive', 'Unsure'],
+            required: true
+        }, {
+            id: 'q2',
+            text: 'Have you experienced shortness of breath?',
+            type: 'radio',
+            options: ['Yes', 'No'],
+            required: true
+        }, {
+            id: 'q3',
+            text: 'Do you smoke?',
+            type: 'radio',
+            options: ['Yes', 'No'],
+            required: false
+        }];
+    } else {
+        currentQuestions = [{
+            id: 'q1',
+            text: 'When did the symptom start?',
+            type: 'select',
+            options: ['Today', '1-3 days ago', '4-7 days ago', 'More than a week ago'],
+            required: true
+        }, {
+            id: 'q2',
+            text: 'Is the symptom constant or intermittent?',
+            type: 'radio',
+            options: ['Constant', 'Intermittent'],
+            required: true
+        }, {
+            id: 'q3',
+            text: 'Any relevant medical history?',
+            type: 'text',
+            placeholder: 'e.g., allergies, chronic conditions',
+            required: false
+        }];
+    }
+    renderQuestions();
+}
+
+function renderQuestions() {
+    questionsContainer.innerHTML = '';
+    currentQuestions.forEach(q => {
+        const wrap = document.createElement('div');
+        wrap.className = 'p-4 border rounded-lg';
+        const label = document.createElement('label');
+        label.className = 'block font-medium mb-2';
+        label.textContent = q.text + (q.required ? ' *' : '');
+        wrap.appendChild(label);
+
+        let control = null;
+        if (q.type === 'radio') {
+            control = document.createElement('div');
+            control.className = 'space-y-2';
+            q.options.forEach(opt => {
+                const id = `${q.id}_${opt}`.replace(/\s+/g, '');
+                const row = document.createElement('label');
+                row.className = 'inline-flex items-center gap-2 mr-4';
+                row.innerHTML = `<input type="radio" name="${q.id}" value="${opt}" class="h-4 w-4"> <span>${opt}</span>`;
+                control.appendChild(row);
+            });
+        }
+        if (q.type === 'select') {
+            control = document.createElement('select');
+            control.className = 'form-select w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500';
+            control.innerHTML = `<option value="">Select...</option>` + q.options.map(o => `<option value="${o}">${o}</option>`).join('');
+            control.name = q.id;
+        }
+        if (q.type === 'text') {
+            control = document.createElement('input');
+            control.type = 'text';
+            control.name = q.id;
+            control.placeholder = q.placeholder || '';
+            control.className = 'form-input w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500';
+        }
+        if (q.type === 'range') {
+            control = document.createElement('div');
+            control.innerHTML = `<input type="range" min="${q.min||0}" max="${q.max||10}" value="0" name="${q.id}" class="w-full"> <div class="text-sm text-gray-600 mt-1">Value: <span data-range="${q.id}">0</span></div>`;
+        }
+        control && wrap.appendChild(control);
+        questionsContainer.appendChild(wrap);
+    });
+
+    // Restore existing answers
+    for (const [qid, val] of Object.entries(wizardState.formData.answers)) {
+        const radios = questionsContainer.querySelectorAll(`input[type=radio][name="${qid}"]`);
+        if (radios.length) {
+            radios.forEach(r => r.checked = (r.value === val));
+        }
+        const sel = questionsContainer.querySelector(`select[name="${qid}"]`);
+        if (sel) sel.value = val;
+        const txt = questionsContainer.querySelector(`input[type=text][name="${qid}"]`);
+        if (txt) txt.value = val;
+        const rangeEl = questionsContainer.querySelector(`input[type=range][name="${qid}"]`);
+        if (rangeEl) {
+            rangeEl.value = val;
+            const lab = questionsContainer.querySelector(`[data-range="${qid}"]`);
+            if (lab) lab.textContent = val;
+        }
+    }
+
+    // Listeners
+    questionsContainer.addEventListener('change', onAnswerChange);
+    questionsContainer.addEventListener('input', (e) => {
+        if (e.target && e.target.type === 'range') {
+            const key = e.target.name;
+            const val = e.target.value;
+            const lab = questionsContainer.querySelector(`[data-range="${key}"]`);
+            if (lab) lab.textContent = val;
+            wizardState.formData.answers[key] = val;
+        }
+    });
+}
+
+function onAnswerChange(e) {
+    const t = e.target;
+    if (!t.name) return;
+    if (t.type === 'radio') {
+        wizardState.formData.answers[t.name] = t.value;
+    } else if (t.tagName === 'SELECT' || t.type === 'text') {
+        wizardState.formData.answers[t.name] = t.value;
+    }
+    validateStep();
+}
+
+function validateQuestions() {
+    const required = currentQuestions.filter(q => q.required);
+    for (const q of required) {
+        const ans = wizardState.formData.answers[q.id];
+        if (!ans || String(ans).trim() === '') return false;
+    }
+    return true;
+}
+
+// Step 3: File Upload
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const fileList = document.getElementById('fileList');
+
+function openFileDialog() {
+    fileInput.click();
+}
+dropzone.addEventListener('click', openFileDialog);
+fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+});
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+});
+
+function handleFiles(files) {
+    const accepted = ['application/pdf', 'image/jpeg', 'image/png'];
+    const maxSize = 10 * 1024 * 1024;
+    Array.from(files).forEach(file => {
+        if (!accepted.includes(file.type)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid file type',
+                text: `${file.name} is not PDF/JPG/PNG.`
+            });
+            return;
+        }
+        if (file.size > maxSize) {
+            Swal.fire({
+                icon: 'error',
+                title: 'File too large',
+                text: `${file.name} exceeds 10MB.`
+            });
+            return;
+        }
+        // simulate upload
+        simulateUpload(file);
+    });
+}
+
+function simulateUpload(file) {
+    const id = `${file.name}-${Date.now()}`;
+    const li = document.createElement('div');
+    li.className = 'flex items-center justify-between p-3 border rounded-md';
+    li.innerHTML = `<div class="flex items-center gap-3"><i class="fa-regular fa-file text-gray-500"></i><div><p class="font-medium text-sm">${file.name}</p><p class="text-xs text-gray-500">${(file.size/1024/1024).toFixed(2)} MB</p></div></div><div class="w-40"><div class="h-2 bg-gray-200 rounded overflow-hidden"><div class="h-2 bg-green-500 w-0" data-progress></div></div></div><button class="ml-3 text-red-600 hover:text-red-700" data-remove aria-label="Remove"><i class="fa-solid fa-trash"></i></button>`;
+    const progressBar = li.querySelector('[data-progress]');
+    const removeBtn = li.querySelector('[data-remove]');
+
+    removeBtn.addEventListener('click', () => {
+        li.remove();
+        wizardState.formData.files = wizardState.formData.files.filter(f => f.id !== id);
+    });
+
+    fileList.appendChild(li);
+    let prog = 0;
+    const t = setInterval(() => {
+        prog += 12 + Math.random() * 15;
+        if (prog >= 100) {
+            prog = 100;
+            clearInterval(t);
+            wizardState.formData.files.push({
+                id,
+                name: file.name,
+                size: file.size,
+                type: file.type
+            });
+        }
+        progressBar.style.width = prog + '%';
+    }, 180);
+}
+
+// Step 4: Review
+function updateReview() {
+    document.getElementById('reviewPrimary').innerHTML = `<span class="font-medium">Primary:</span> ${wizardState.formData.primarySymptom || '—'}`;
+    document.getElementById('reviewAdditional').innerHTML = `<span class="font-medium">Additional:</span> ${wizardState.formData.additionalSymptoms || '—'}`;
+    const ans = wizardState.formData.answers;
+    const answersList = Object.keys(ans).length ? Object.entries(ans).map(([k, v]) => `<div><span class="font-medium">${formatQuestionLabel(k)}:</span> ${v}</div>`).join('') : '—';
+    document.getElementById('reviewAnswers').innerHTML = answersList;
+    const files = wizardState.formData.files;
+    document.getElementById('reviewFiles').innerHTML = files.length ? files.map(f => `<li>${f.name} (${(f.size/1024/1024).toFixed(2)} MB)</li>`).join('') : '<li>—</li>';
+}
+
+function formatQuestionLabel(id) {
+    const q = currentQuestions.find(x => x.id === id);
+    return q ? q.text : id;
+}
+
+// Submit
+submitBtn.addEventListener('click', async () => {
+    if (!validateStep()) return;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="inline-flex items-center"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Submitting...</span>';
+    // Simulate API call
+    try {
+        await new Promise(res => setTimeout(res, 1500));
+        Swal.fire({
+            icon: 'success',
+            title: 'Diagnosis Submitted',
+            text: 'Your case has been created. Redirecting to Case Details...',
+            timer: 1600,
+            showConfirmButton: false
+        });
+        setTimeout(() => {
+            window.location.href = './case_details_page.html';
+        }, 1500);
+    } catch (e) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Submission failed',
+            text: 'Please try again.'
+        });
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="inline-flex items-center"><i class="fa-solid fa-stethoscope mr-2"></i>Get My Preliminary Diagnosis</span>';
+    }
+});
+
+// Persist basic progress in localStorage (mock autosave)
+function saveProgress() {
+    try {
+        localStorage.setItem('diagnosis_progress_v1', JSON.stringify(wizardState));
+    } catch (err) {}
+}
+
+function loadProgress() {
+    try {
+        const raw = localStorage.getItem('diagnosis_progress_v1');
+        if (raw) {
+            const data = JSON.parse(raw);
+            Object.assign(wizardState, data);
+        }
+    } catch (err) {}
+}
+
+// Initialize
+loadProgress();
+// if we loaded a primary symptom, regen questions
+if (wizardState.formData.primarySymptom) {
+    primarySymptomInput.value = wizardState.formData.primarySymptom;
+    generateQuestions(wizardState.formData.primarySymptom);
+}
+additionalSymptomsEl.value = wizardState.formData.additionalSymptoms || '';
+updateStepUI();
+
+// Save on change
+document.addEventListener('input', (e) => {
+    if (e.target === primarySymptomInput || e.target === additionalSymptomsEl) {
+        saveProgress();
+    }
+});
+
+// Notification panel toggle
+const notifToggle = document.getElementById('notifToggle');
+const notifClose = document.getElementById('notifClose');
+const notifPanel = document.getElementById('notificationPanel');
+notifToggle.addEventListener('click', () => notifPanel.classList.add('open'));
+notifClose.addEventListener('click', () => notifPanel.classList.remove('open'));
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') notifPanel.classList.remove('open');
+});
+
+// Help assistant toggle
+const helpToggle = document.getElementById('helpToggle');
+const helpDrawer = document.getElementById('helpDrawer');
+const helpClose = document.getElementById('helpClose');
+helpToggle.addEventListener('click', () => helpDrawer.classList.toggle('open'));
+helpClose.addEventListener('click', () => helpDrawer.classList.remove('open'));
+document.getElementById('contactSupport').addEventListener('click', () => {
+    Swal.fire({
+        title: 'Contact Support',
+        html: '<div class="text-left">Email: support@example.com<br/>We will get back within 24 hours.</div>',
+        icon: 'question',
+        confirmButtonText: 'Okay',
+        confirmButtonColor: '#0000FF'
+    })
+})
+
+// Move to step 2 automatically when user selects suggestion
+primarySymptomInput.addEventListener('blur', () => {
+    if (wizardState.formData.primarySymptom && currentQuestions.length === 0) {
+        generateQuestions(wizardState.formData.primarySymptom);
+    }
+});
+
+// Next/Back save
+backBtn.addEventListener('click', saveProgress);
+nextBtn.addEventListener('click', saveProgress);
+
+// Disclaimer checkbox validation
+document.getElementById('ackDisclaimer').addEventListener('change', validateStep);
+  </script>
+  <!--
+  ========== new_diagnosis_page.css (Page-specific CSS to place in a separate file) ==========
+  :root { --accent-blue: #0000FF; --accent-teal: #008080; }
+  .wizard-progress { counter-reset: step; }
+  .wizard-step { position: relative; display: flex; align-items: center; gap: 12px; }
+  .wizard-step .circle { width: 32px; height: 32px; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; background: #e5e7eb; color: #374151; }
+  .wizard-step.active .circle { background: rgba(0,0,255,0.12); color: var(--accent-blue); border: 2px solid var(--accent-blue); }
+  .wizard-step.completed .circle { background: #16a34a; color: #fff; }
+  .wizard-connector { height: 2px; background: #e5e7eb; flex: 1; }
+  .wizard-connector.completed { background: #16a34a; }
+  .sticky-action-bar { position: sticky; bottom: 0; z-index: 20; backdrop-filter: blur(6px); }
+  .suggestions { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-height: 240px; overflow: auto; z-index: 40; }
+  .suggestion-item { padding: 10px 12px; cursor: pointer; }
+  .suggestion-item:hover, .suggestion-item[aria-selected="true"] { background: #f3f4f6; }
+  .dropzone { border: 2px dashed #cbd5e1; border-radius: 12px; transition: all .2s ease; }
+  .dropzone.dragover { border-color: var(--accent-blue); background: rgba(0,0,255,0.05); }
+  #notificationPanel { position: fixed; top: 64px; right: 0; width: 360px; max-width: 90vw; height: calc(100vh - 64px); background: #fff; border-left: 1px solid #e5e7eb; box-shadow: -8px 0 24px rgba(0,0,0,0.08); transform: translateX(100%); transition: transform .25s ease; z-index: 60; }
+  #notificationPanel.open { transform: translateX(0); }
+  #helpAssistant { position: fixed; right: 16px; bottom: 16px; z-index: 60; }
+  #helpDrawer { position: fixed; right: 16px; bottom: 76px; width: 340px; max-width: 92vw; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 16px 48px rgba(0,0,0,0.15); transform: translateY(16px); opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 60; padding: 16px; }
+  #helpDrawer.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .accessibility-mode body, .accessibility-mode { font-size: 20px; line-height: 1.7; }
+  .accessibility-mode .high-contrast { filter: contrast(1.2) saturate(1.1); }
+  .accessibility-mode .focus-ring:focus { outline: 3px solid var(--accent-blue); outline-offset: 2px; }
+  main { min-height: calc(100vh - 64px - 80px); }
+  ============================================================================================
+  -->
+ </body>
+</html>

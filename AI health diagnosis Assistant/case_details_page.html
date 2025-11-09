@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Case Details Page
+  </title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <link href="style.css" rel="stylesheet">
+   <script src="https://cdn.tailwindcss.com">
+   </script>
+   <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-wY6YyF1X5wzR8jCQoDk9N5mTif6MnzQkQ3YzNf61V/0OwFZCkB4Q8dDUpu8yKxchf6vY0zq0qvHnK0+J6Vj2dg==" referrerpolicy="no-referrer" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+    </script>
+    <style>
+     /* Case Details Page Specific CSS (place in case_details_page.css if separating) */
+    body { font-family: 'Poppins', sans-serif; }
+    .accessibility-mode { font-size: 18px; line-height: 1.6; }
+    .tooltip { position: relative; }
+    .tooltip .tooltip-content { position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+    .tooltip:hover .tooltip-content { opacity: 1; }
+    .slide-in-right { transform: translateX(100%); transition: transform 0.3s ease; }
+    .slide-in-right.open { transform: translateX(0); }
+    .help-assistant { position: fixed; right: 1rem; bottom: 1rem; z-index: 60; }
+    .help-panel { transform: translateY(120%); transition: transform 0.3s ease; }
+    .help-panel.open { transform: translateY(0); }
+    .skeleton { background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%); background-size: 400% 100%; animation: shimmer 1.4s infinite; }
+    @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+    .badge { display:inline-flex; align-items:center; gap:.4rem; padding:.25rem .5rem; border-radius:.5rem; font-size:.75rem; font-weight:600; }
+    .badge-high { background-color: #fee2e2; color: #b91c1c; }
+    .badge-medium { background-color: #fffbeb; color: #b45309; }
+    .badge-low { background-color: #ecfdf5; color: #15803d; }
+    .expandable { cursor: pointer; }
+    .expandable .chev { transition: transform .2s ease; }
+    .expandable.open .chev { transform: rotate(180deg); }
+    .table-sort-asc::after { content: ' \25B2'; }
+    .table-sort-desc::after { content: ' \25BC'; }
+    </style>
+   </link>
+  </link>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="bg-gray-50 text-gray-800">
+  <!-- Header (Doctor App Header) -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <div class="flex items-center gap-3">
+      <button class="md:hidden inline-flex items-center px-2 py-2 rounded-md bg-white/20" id="sidebarToggle">
+       <i class="fa-solid fa-bars">
+       </i>
+      </button>
+      <a class="flex items-center gap-2" href="./doctor_dashboard.html">
+       <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+        <i class="fa-solid fa-heart-pulse">
+        </i>
+       </span>
+       <span class="font-semibold tracking-wide">
+        Doctor Portal
+       </span>
+      </a>
+     </div>
+     <div class="hidden md:flex items-center gap-4 flex-1 justify-center">
+      <div class="w-full max-w-lg relative">
+       <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/70">
+       </i>
+       <input class="w-full pl-9 pr-3 py-2 rounded-md bg-white/20 placeholder-white/70 focus:bg-white/30 focus:outline-none" placeholder="Search cases (ID, patient name, status)..." type="search"/>
+      </div>
+     </div>
+     <div class="flex items-center gap-2">
+      <a class="hidden sm:inline-flex px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./doctor_dashboard.html#pending">
+       Go to Queue
+      </a>
+      <button aria-label="Notifications" class="p-2 rounded-md hover:bg-white/20 tooltip" id="notifBtn">
+       <i class="fa-regular fa-bell">
+       </i>
+       <span class="tooltip-content">
+        View alerts
+       </span>
+      </button>
+      <button aria-label="Messages" class="p-2 rounded-md hover:bg-white/20">
+       <i class="fa-regular fa-envelope">
+       </i>
+      </button>
+      <div class="relative">
+       <button class="inline-flex items-center gap-2 px-2 py-2 rounded-md hover:bg-white/20" id="profileMenuBtn">
+        <i class="fa-regular fa-user">
+        </i>
+        <span class="hidden sm:inline">
+         Profile
+        </span>
+        <i class="fa-solid fa-chevron-down text-xs">
+        </i>
+       </button>
+       <div class="absolute right-0 mt-2 w-44 bg-white text-gray-700 rounded-md shadow-lg overflow-hidden hidden" id="profileMenu">
+        <a class="block px-4 py-2 hover:bg-gray-100" href="./settings_page.html">
+         Settings
+        </a>
+        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='./login_page.html'">
+         Logout
+        </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+    const pb = document.getElementById('profileMenuBtn');
+    const pm = document.getElementById('profileMenu');
+    if (pb && pm) {
+        pb.addEventListener('click', () => pm.classList.toggle('hidden'));
+    }
+    document.addEventListener('click', (e) => {
+        const pm = document.getElementById('profileMenu');
+        const pb = document.getElementById('profileMenuBtn');
+        if (pm && !pm.classList.contains('hidden') && !pb.contains(e.target) && !pm.contains(e.target)) {
+            pm.classList.add('hidden');
+        }
+    });
+})();
+   </script>
+  </header>
+  <!-- Sidebar (Doctor App Sidebar) -->
+  <aside class="mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 text-gray-700">
+    <p class="px-3 pb-2 text-xs uppercase tracking-wide text-gray-500">
+     Queue
+    </p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./doctor_dashboard.html">
+     <i class="fa-solid fa-gauge text-[#008080]">
+     </i>
+     <span>
+      Dashboard
+     </span>
+    </a>
+    <details class="group mt-2" open="">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-clipboard-list text-[#008080]">
+      </i>
+      <span>
+       Cases
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#pending">
+       Pending Review
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#confirmed">
+       Confirmed
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#rejected">
+       Rejected
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./case_review_page.html">
+       Review Case
+      </a>
+      <a aria-current="page" class="block px-3 py-1 rounded-md bg-[#0000FF]/10 text-[#0000FF] font-medium" href="./case_details_page.html">
+       Case Details
+      </a>
+     </div>
+    </details>
+    <div class="mt-4 border-t pt-4">
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./settings_page.html">
+      <i class="fa-solid fa-gear text-[#008080]">
+      </i>
+      <span>
+       Settings
+      </span>
+     </a>
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./about_page.html">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span>
+       Support
+      </span>
+     </a>
+    </div>
+   </nav>
+  </aside>
+  <!-- Notification Panel (slides in from right) -->
+  <aside class="fixed top-16 right-0 w-80 h-[calc(100vh-64px)] bg-white border-l border-gray-200 shadow-lg slide-in-right z-40" id="notificationPanel">
+   <div class="p-4 flex items-center justify-between border-b">
+    <h3 class="text-gray-800 font-semibold">
+     Notifications
+    </h3>
+    <button class="p-2 rounded hover:bg-gray-100" id="notifClose">
+     <i class="fa-solid fa-xmark">
+     </i>
+    </button>
+   </div>
+   <div class="p-4 space-y-3 overflow-y-auto h-[calc(100%-56px)]">
+    <div class="flex items-start gap-3">
+     <span class="badge badge-high">
+      <i class="fa-solid fa-triangle-exclamation">
+      </i>
+      High
+     </span>
+     <div>
+      <p class="text-sm font-medium">
+       Urgent follow-up required
+      </p>
+      <p class="text-xs text-gray-500">
+       CASE-2025-00042 flagged as high urgency.
+       <span class="text-blue-600">
+        <a href="./case_details_page.html">
+         Open
+        </a>
+       </span>
+      </p>
+     </div>
+    </div>
+    <div class="flex items-start gap-3">
+     <span class="badge badge-medium">
+      <i class="fa-solid fa-circle-info">
+      </i>
+      Medium
+     </span>
+     <div>
+      <p class="text-sm font-medium">
+       New document uploaded by patient
+      </p>
+      <p class="text-xs text-gray-500">
+       Radiology report available.
+       <a class="text-blue-600" href="./case_details_page.html#documents">
+        View
+       </a>
+      </p>
+     </div>
+    </div>
+    <div class="flex items-start gap-3">
+     <span class="badge badge-low">
+      <i class="fa-solid fa-check">
+      </i>
+      Low
+     </span>
+     <div>
+      <p class="text-sm font-medium">
+       AI analysis completed
+      </p>
+      <p class="text-xs text-gray-500">
+       New confidence scores published.
+       <a class="text-blue-600" href="#ai-analysis">
+        See results
+       </a>
+      </p>
+     </div>
+    </div>
+   </div>
+  </aside>
+  <!-- Main Content -->
+  <main class="mt-16 md:ml-64 min-h-screen">
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Top bar: Breadcrumbs / Case header -->
+    <div class="flex items-center justify-between">
+     <div class="flex items-center gap-2 text-sm text-gray-600">
+      <a class="hover:text-blue-600" href="./doctor_dashboard.html">
+       <i class="fa-solid fa-inbox mr-1">
+       </i>
+       Back to Dashboard
+      </a>
+      <span>
+       /
+      </span>
+      <span>
+       Case Details
+      </span>
+     </div>
+     <div class="flex items-center gap-3">
+      <button class="px-3 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-sm" id="accessibilityToggle">
+       <i class="fa-solid fa-universal-access">
+       </i>
+       Accessibility
+      </button>
+      <a class="px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm" href="./new_diagnosis_page.html">
+       <i class="fa-solid fa-plus">
+       </i>
+       New Diagnosis
+      </a>
+     </div>
+    </div>
+    <!-- Case Title / Meta -->
+    <div class="mt-4 bg-white rounded-lg shadow border border-gray-200 p-4">
+     <div class="flex items-center justify-between">
+      <div>
+       <h1 class="text-xl font-semibold text-gray-800">
+        Case ID:
+        <span id="caseId">
+         CASE-2025-00042
+        </span>
+       </h1>
+       <p class="text-sm text-gray-500">
+        Created:
+        <span id="createdAt">
+         2025-10-12
+        </span>
+        • Patient:
+        <span id="patientName">
+         Alex Johnson
+        </span>
+        • Age: 34
+       </p>
+      </div>
+      <div class="flex items-center gap-2">
+       <span class="badge badge-high" id="urgencyBadge">
+        <i class="fa-solid fa-bolt">
+        </i>
+        High Urgency
+       </span>
+       <div class="tooltip">
+        <button aria-label="Narrate summary" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200" id="voiceNarrate">
+         <i class="fa-solid fa-volume-high">
+         </i>
+        </button>
+        <span class="tooltip-content">
+         Narrate AI summary
+        </span>
+       </div>
+      </div>
+     </div>
+     <div class="mt-3 flex items-center gap-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#008080]/10 text-[#008080] text-sm">
+       <i class="fa-solid fa-user-doctor">
+       </i>
+       View as
+      </div>
+      <div class="flex items-center gap-1 text-sm">
+       <label class="inline-flex items-center gap-2 px-3 py-1 rounded cursor-pointer">
+        <input checked="" class="accent-blue-600" name="roleView" type="radio" value="Doctor"/>
+        Doctor
+       </label>
+       <label class="inline-flex items-center gap-2 px-3 py-1 rounded cursor-pointer">
+        <input class="accent-blue-600" name="roleView" type="radio" value="Patient"/>
+        Patient
+       </label>
+      </div>
+     </div>
+    </div>
+    <!-- Two-column layout: Left main panels / Right Doctor Review -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+     <!-- Left/Main: Patient Summary, Documents, AI Analysis -->
+     <div class="lg:col-span-2 space-y-6">
+      <!-- PatientSummaryPanel -->
+      <section class="bg-white rounded-lg shadow border border-gray-200" id="patient-summary">
+       <div class="border-b p-4 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">
+         Patient Submitted Information
+        </h2>
+        <button class="px-3 py-1 text-sm rounded-md bg-gray-100 hover:bg-gray-200" id="togglePatientSummary">
+         Toggle
+        </button>
+       </div>
+       <div class="p-4 space-y-4" id="patientSummaryBody">
+        <!-- Skeleton while loading -->
+        <div class="hidden" id="patientSummarySkeleton">
+         <div class="h-4 w-1/3 skeleton rounded">
+         </div>
+         <div class="h-4 w-1/2 skeleton rounded mt-2">
+         </div>
+         <div class="h-4 w-2/3 skeleton rounded mt-2">
+         </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div class="bg-gray-50 rounded p-3">
+          <p class="text-sm text-gray-500">
+           Primary Complaint
+          </p>
+          <p class="font-medium">
+           Chest pain and shortness of breath
+          </p>
+         </div>
+         <div class="bg-gray-50 rounded p-3">
+          <p class="text-sm text-gray-500">
+           Onset
+          </p>
+          <p class="font-medium">
+           2 days ago, intermittent
+          </p>
+         </div>
+         <div class="bg-gray-50 rounded p-3">
+          <p class="text-sm text-gray-500">
+           Severity
+          </p>
+          <p class="font-medium">
+           Moderate to severe
+          </p>
+         </div>
+         <div class="bg-gray-50 rounded p-3">
+          <p class="text-sm text-gray-500">
+           Medical History
+          </p>
+          <p class="font-medium">
+           Hypertension (managed), smoker (quit 2 years ago)
+          </p>
+         </div>
+        </div>
+        <div class="mt-4">
+         <h3 class="text-md font-semibold">
+          Symptom Details
+         </h3>
+         <ul class="mt-2 space-y-2">
+          <li class="flex items-start gap-3">
+           <i class="fa-solid fa-circle text-xs text-gray-400 mt-1">
+           </i>
+           <span>
+            <span class="font-medium">
+             Pain location:
+            </span>
+            central chest, radiates to left arm
+           </span>
+          </li>
+          <li class="flex items-start gap-3">
+           <i class="fa-solid fa-circle text-xs text-gray-400 mt-1">
+           </i>
+           <span>
+            <span class="font-medium">
+             Triggers:
+            </span>
+            worsens with exertion, relieves with rest
+           </span>
+          </li>
+          <li class="flex items-start gap-3">
+           <i class="fa-solid fa-circle text-xs text-gray-400 mt-1">
+           </i>
+           <span>
+            <span class="font-medium">
+             Associated symptoms:
+            </span>
+            mild nausea, lightheadedness
+           </span>
+          </li>
+          <li class="flex items-start gap-3">
+           <i class="fa-solid fa-circle text-xs text-gray-400 mt-1">
+           </i>
+           <span>
+            <span class="font-medium">
+             Medications:
+            </span>
+            Amlodipine 5mg qd
+           </span>
+          </li>
+         </ul>
+        </div>
+       </div>
+      </section>
+      <!-- UploadedDocumentsPanel -->
+      <section class="bg-white rounded-lg shadow border border-gray-200" id="documents">
+       <div class="border-b p-4 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">
+         Uploaded Documents
+        </h2>
+        <div class="flex items-center gap-2">
+         <label class="text-sm">
+          Filter:
+         </label>
+         <select class="border rounded px-2 py-1 text-sm" id="docFilter">
+          <option selected="" value="all">
+           All
+          </option>
+          <option value="image">
+           Images
+          </option>
+          <option value="pdf">
+           PDF
+          </option>
+          <option value="lab">
+           Lab
+          </option>
+         </select>
+        </div>
+       </div>
+       <div class="p-4">
+        <div class="overflow-x-auto">
+         <table class="min-w-full text-sm">
+          <thead>
+           <tr class="bg-gray-100">
+            <th class="px-3 py-2 text-left">
+             <button class="font-medium" data-sort="name">
+              File Name
+             </button>
+            </th>
+            <th class="px-3 py-2 text-left">
+             <button class="font-medium" data-sort="type">
+              Type
+             </button>
+            </th>
+            <th class="px-3 py-2 text-left">
+             <button class="font-medium" data-sort="date">
+              Uploaded
+             </button>
+            </th>
+            <th class="px-3 py-2 text-right">
+             Size
+            </th>
+            <th class="px-3 py-2 text-right">
+             Actions
+            </th>
+           </tr>
+          </thead>
+          <tbody class="divide-y" id="docsTbody">
+           <!-- Rows rendered by JS -->
+          </tbody>
+         </table>
+        </div>
+        <div class="mt-3 flex items-center justify-between text-xs text-gray-600">
+         <div>
+          Showing
+          <span id="pageFrom">
+           1
+          </span>
+          -
+          <span id="pageTo">
+           6
+          </span>
+          of
+          <span id="pageTotal">
+           12
+          </span>
+         </div>
+         <div class="flex items-center gap-1">
+          <button class="px-2 py-1 rounded border hover:bg-gray-100" id="prevPage">
+           Prev
+          </button>
+          <span class="px-2" id="pageIndex">
+           1
+          </span>
+          <button class="px-2 py-1 rounded border hover:bg-gray-100" id="nextPage">
+           Next
+          </button>
+         </div>
+        </div>
+       </div>
+      </section>
+      <!-- AIAnalysisPanel -->
+      <section class="bg-white rounded-lg shadow border border-gray-200" id="ai-analysis">
+       <div class="border-b p-4 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">
+         AI Analysis
+        </h2>
+        <span class="badge badge-high" id="urgencyIndicator">
+         <i class="fa-solid fa-bolt">
+         </i>
+         High
+        </span>
+       </div>
+       <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Conditions list -->
+        <div>
+         <h3 class="text-md font-semibold">
+          Potential Diagnoses
+         </h3>
+         <ul class="mt-2 space-y-2" id="conditionsList">
+          <!-- List items populated by JS -->
+         </ul>
+        </div>
+        <!-- Chart -->
+        <div>
+         <h3 class="text-md font-semibold">
+          Confidence Scores
+         </h3>
+         <div class="mt-3" id="confidenceChart">
+         </div>
+        </div>
+       </div>
+      </section>
+     </div>
+     <!-- Right: DoctorReviewPanel -->
+     <aside class="lg:col-span-1">
+      <section class="bg-white rounded-lg shadow border border-gray-200" id="doctorReviewPanel">
+       <div class="border-b p-4">
+        <h2 class="text-lg font-semibold">
+         Doctor Review
+        </h2>
+        <p class="text-xs text-gray-500" id="caseStatusLabel">
+         Status: Pending Doctor Review
+        </p>
+       </div>
+       <div class="p-4 space-y-4" id="doctorReviewBody">
+        <!-- Decision Buttons (Doctor only, pending) -->
+        <div class="space-y-2" id="decisionGroup">
+         <p class="text-sm text-gray-600">
+          Choose decision
+         </p>
+         <div class="grid grid-cols-2 gap-2">
+          <button class="px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700" data-decision="Confirm">
+           <i class="fa-solid fa-check">
+           </i>
+           Confirm
+          </button>
+          <button class="px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-700" data-decision="Reject">
+           <i class="fa-solid fa-xmark">
+           </i>
+           Reject
+          </button>
+         </div>
+         <p class="text-xs text-gray-500" id="selectedDecisionLabel">
+          Selected: none
+         </p>
+        </div>
+        <!-- Notes Textarea -->
+        <div>
+         <label class="text-sm font-medium" for="notesTextarea">
+          Professional Notes
+         </label>
+         <textarea class="mt-1 w-full border rounded p-2" id="notesTextarea" placeholder="Enter notes, diagnosis, and recommendations." rows="6"></textarea>
+         <p class="text-xs text-gray-500 mt-1">
+          Required for submission.
+         </p>
+        </div>
+        <!-- Submit Button -->
+        <div>
+         <button class="w-full px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled="" id="submitReviewBtn">
+          <i class="fa-solid fa-paper-plane">
+          </i>
+          Submit Review
+         </button>
+        </div>
+        <!-- Final Diagnosis Display (visible after review complete) -->
+        <div class="hidden border-t pt-4" id="finalDiagnosisDisplay">
+         <p class="text-sm text-gray-600">
+          Final Decision
+         </p>
+         <div class="mt-2 bg-gray-50 rounded p-3">
+          <p>
+           <span class="font-medium">
+            Status:
+           </span>
+           <span id="finalStatus">
+            Confirmed
+           </span>
+          </p>
+          <p>
+           <span class="font-medium">
+            Reviewed by:
+           </span>
+           <span id="reviewDoctor">
+            Dr. Sam Lee
+           </span>
+           on
+           <span id="reviewDate">
+            2025-10-14
+           </span>
+          </p>
+          <p class="mt-2">
+           <span class="font-medium">
+            Notes:
+           </span>
+           <span id="finalNotes">
+            Recommend immediate cardiology consult and troponin series.
+           </span>
+          </p>
+         </div>
+        </div>
+       </div>
+      </section>
+     </aside>
+    </div>
+   </section>
+  </main>
+  <!-- Help Assistant (floating) -->
+  <div class="help-assistant">
+   <button class="px-4 py-3 rounded-full shadow bg-blue-600 text-white hover:bg-blue-700" id="helpToggle">
+    <i class="fa-solid fa-life-ring">
+    </i>
+   </button>
+   <div class="mt-2 w-80 bg-white rounded-lg shadow border border-gray-200 p-4 help-panel" id="helpPanel">
+    <div class="flex items-center justify-between">
+     <h3 class="font-semibold">
+      Help Assistant
+     </h3>
+     <button class="p-2 rounded hover:bg-gray-100" id="helpClose">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <p class="text-sm text-gray-600 mt-2">
+     Quick tips:
+    </p>
+    <ul class="text-sm mt-2 space-y-1">
+     <li>
+      <i class="fa-solid fa-hand-pointer text-blue-600">
+      </i>
+      Click a diagnosis to expand explanation.
+     </li>
+     <li>
+      <i class="fa-solid fa-filter text-blue-600">
+      </i>
+      Use filters to narrow documents by type.
+     </li>
+     <li>
+      <i class="fa-solid fa-microphone-lines text-blue-600">
+      </i>
+      Use Narrate to hear the AI summary.
+     </li>
+    </ul>
+    <div class="mt-3">
+     <a class="text-blue-600 text-sm" href="./about_page.html">
+      Contact support
+     </a>
+    </div>
+   </div>
+  </div>
+  <!-- Footer -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      Doctor Portal
+     </span>
+    </div>
+    <div class="flex items-center gap-4">
+     <a class="px-3 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/80 text-sm" href="./doctor_dashboard.html#pending">
+      View Pending
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      Terms
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      Privacy
+     </a>
+    </div>
+   </div>
+  </footer>
+  <!-- Scripts: Page logic -->
+  <script>
+   // Sample Data
+const caseData = {
+    caseId: 'CASE-2025-00042',
+    createdAt: '2025-10-12',
+    patient: {
+        name: 'Alex Johnson',
+        age: 34
+    },
+    aiResults: {
+        urgency: 'High',
+        conditions: [{
+            conditionName: 'Acute Coronary Syndrome',
+            confidenceScore: 0.87,
+            explanation: 'Symptoms and pattern suggest possible myocardial ischemia. Immediate workup recommended.'
+        }, {
+            conditionName: 'Pulmonary Embolism',
+            confidenceScore: 0.62,
+            explanation: 'Shortness of breath with chest pain raises concern. Consider D-dimer and CT pulmonary angiography if indicated.'
+        }, {
+            conditionName: 'Gastroesophageal Reflux Disease',
+            confidenceScore: 0.31,
+            explanation: 'Non-exertional pain could be GERD; however, current triggers and associated symptoms make it less likely.'
+        }, {
+            conditionName: 'Costochondritis',
+            confidenceScore: 0.24,
+            explanation: 'Localized chest wall tenderness would support this; currently not prominent in history.'
+        }]
+    },
+    documents: [{
+        name: 'ECG_2025-10-12.pdf',
+        type: 'pdf',
+        date: '2025-10-12',
+        size: 0.35,
+        url: 'https://example.com/secure/ecg',
+        icon: 'fa-file-pdf'
+    }, {
+        name: 'Chest_XRay.png',
+        type: 'image',
+        date: '2025-10-12',
+        size: 1.2,
+        url: 'https://example.com/secure/xray',
+        icon: 'fa-file-image'
+    }, {
+        name: 'Lab_Troponin.csv',
+        type: 'lab',
+        date: '2025-10-13',
+        size: 0.02,
+        url: 'https://example.com/secure/lab',
+        icon: 'fa-vial'
+    }, {
+        name: 'Physician_Notes.pdf',
+        type: 'pdf',
+        date: '2025-10-13',
+        size: 0.44,
+        url: 'https://example.com/secure/notes',
+        icon: 'fa-file-pdf'
+    }, {
+        name: 'Insurance_Form.pdf',
+        type: 'pdf',
+        date: '2025-10-14',
+        size: 0.28,
+        url: 'https://example.com/secure/ins',
+        icon: 'fa-file-pdf'
+    }, {
+        name: 'Radiology_Report.pdf',
+        type: 'pdf',
+        date: '2025-10-14',
+        size: 0.67,
+        url: 'https://example.com/secure/rad',
+        icon: 'fa-file-pdf'
+    }, {
+        name: 'Vitals_Chart.png',
+        type: 'image',
+        date: '2025-10-11',
+        size: 0.88,
+        url: 'https://example.com/secure/vitals',
+        icon: 'fa-file-image'
+    }, {
+        name: 'Referral_Letter.pdf',
+        type: 'pdf',
+        date: '2025-10-10',
+        size: 0.15,
+        url: 'https://example.com/secure/ref',
+        icon: 'fa-file-pdf'
+    }, {
+        name: 'Consent_Form.pdf',
+        type: 'pdf',
+        date: '2025-10-10',
+        size: 0.12,
+        url: 'https://example.com/secure/consent',
+        icon: 'fa-file-pdf'
+    }, {
+        name: 'Blood_Panel.csv',
+        type: 'lab',
+        date: '2025-10-09',
+        size: 0.03,
+        url: 'https://example.com/secure/blood',
+        icon: 'fa-vial'
+    }, {
+        name: 'Stress_Test.mp4',
+        type: 'image',
+        date: '2025-10-08',
+        size: 22.0,
+        url: 'https://example.com/secure/stress',
+        icon: 'fa-file-video'
+    }, {
+        name: 'Medication_List.pdf',
+        type: 'pdf',
+        date: '2025-10-07',
+        size: 0.21,
+        url: 'https://example.com/secure/meds',
+        icon: 'fa-file-pdf'
+    }],
+    review: null, // will be set after submission
+    status: 'Pending Doctor Review'
+};
+
+// Accessibility toggle
+const accessibilityToggle = document.getElementById('accessibilityToggle');
+accessibilityToggle.addEventListener('click', () => {
+    document.body.classList.toggle('accessibility-mode');
+});
+
+// Notification panel toggle
+const notificationPanel = document.getElementById('notificationPanel');
+document.getElementById('notifBtn').addEventListener('click', () => notificationPanel.classList.toggle('open'));
+document.getElementById('notifClose').addEventListener('click', () => notificationPanel.classList.remove('open'));
+
+// Help assistant
+const helpPanel = document.getElementById('helpPanel');
+document.getElementById('helpToggle').addEventListener('click', () => helpPanel.classList.add('open'));
+document.getElementById('helpClose').addEventListener('click', () => helpPanel.classList.remove('open'));
+
+// Populate case header
+document.getElementById('caseId').textContent = caseData.caseId;
+document.getElementById('createdAt').textContent = caseData.createdAt;
+document.getElementById('patientName').textContent = caseData.patient.name;
+
+// Urgency indicator
+function setUrgency(level) {
+    const badge = document.getElementById('urgencyIndicator');
+    const topBadge = document.getElementById('urgencyBadge');
+    const map = {
+        High: ['badge-high', 'High'],
+        Medium: ['badge-medium', 'Medium'],
+        Low: ['badge-low', 'Low']
+    };
+    const [cls, text] = map[level] || map.High;
+    badge.className = `badge ${cls}`;
+    badge.innerHTML = `<i class='fa-solid fa-bolt'></i> ${text}`;
+    topBadge.className = `badge ${cls}`;
+    topBadge.innerHTML = `<i class='fa-solid fa-bolt'></i> ${text} Urgency`;
+}
+setUrgency(caseData.aiResults.urgency);
+
+// Patient summary toggle
+const psBody = document.getElementById('patientSummaryBody');
+document.getElementById('togglePatientSummary').addEventListener('click', () => psBody.classList.toggle('hidden'));
+
+// Documents table rendering with sorting, filtering, pagination
+const docsTbody = document.getElementById('docsTbody');
+const filterSelect = document.getElementById('docFilter');
+const pageSize = 6;
+let page = 1;
+let sortField = null;
+let sortDir = 'asc';
+
+function getFiltered() {
+    const type = filterSelect.value;
+    return caseData.documents.filter(d => type === 'all' ? true : d.type === type);
+}
+
+function sortDocs(arr) {
+    if (!sortField) return arr;
+    return [...arr].sort((a, b) => {
+        let va = a[sortField],
+            vb = b[sortField];
+        if (sortField === 'date') {
+            va = new Date(va);
+            vb = new Date(vb);
+        }
+        if (va < vb) return sortDir === 'asc' ? -1 : 1;
+        if (va > vb) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+    });
+}
+
+function renderDocs() {
+    const all = sortDocs(getFiltered());
+    const total = all.length;
+    const start = (page - 1) * pageSize;
+    const end = Math.min(start + pageSize, total);
+    docsTbody.innerHTML = '';
+    all.slice(start, end).forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50';
+        tr.innerHTML = `
+          <td class='px-3 py-2'><i class='fa-solid ${d.icon} text-gray-500 mr-2'></i>${d.name}</td>
+          <td class='px-3 py-2 capitalize'>${d.type}</td>
+          <td class='px-3 py-2'>${d.date}</td>
+          <td class='px-3 py-2 text-right'>${d.size.toFixed(2)} MB</td>
+          <td class='px-3 py-2 text-right'>
+            <a href='${d.url}' target='_blank' rel='noopener noreferrer' class='px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 text-xs'>View</a>
+            <button class='px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xs' onclick='Swal.fire({icon:"info",title:"Download requested",text:"A secure, expiring link will be generated."})'>Download</button>
+          </td>`;
+        docsTbody.appendChild(tr);
+    });
+    document.getElementById('pageFrom').textContent = total ? start + 1 : 0;
+    document.getElementById('pageTo').textContent = end;
+    document.getElementById('pageTotal').textContent = total;
+    document.getElementById('pageIndex').textContent = page;
+}
+renderDocs();
+filterSelect.addEventListener('change', () => {
+    page = 1;
+    renderDocs();
+});
+document.getElementById('prevPage').addEventListener('click', () => {
+    if (page > 1) {
+        page--;
+        renderDocs();
+    }
+});
+document.getElementById('nextPage').addEventListener('click', () => {
+    const total = getFiltered().length;
+    const maxPage = Math.ceil(total / pageSize);
+    if (page < maxPage) {
+        page++;
+        renderDocs();
+    }
+});
+// Sorting handlers
+document.querySelectorAll('thead button[data-sort]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const field = btn.getAttribute('data-sort');
+        if (sortField === field) {
+            sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortField = field;
+            sortDir = 'asc';
+        }
+        document.querySelectorAll('thead button[data-sort]').forEach(b => b.classList.remove('table-sort-asc', 'table-sort-desc'));
+        btn.classList.add(sortDir === 'asc' ? 'table-sort-asc' : 'table-sort-desc');
+        renderDocs();
+    });
+});
+
+// AI Analysis conditions list with expandable explanations
+const conditionsList = document.getElementById('conditionsList');
+caseData.aiResults.conditions.forEach((c, idx) => {
+    const li = document.createElement('li');
+    li.className = 'border rounded';
+    li.innerHTML = `
+        <div class='p-3 flex items-center justify-between expandable' data-idx='${idx}'>
+          <div>
+            <p class='font-medium'>${c.conditionName}</p>
+            <p class='text-xs text-gray-500'>Confidence: ${(c.confidenceScore*100).toFixed(1)}%</p>
+          </div>
+          <i class='fa-solid fa-chevron-down chev text-gray-400'></i>
+        </div>
+        <div class='p-3 pt-0 hidden text-sm text-gray-700 explanation'>${c.explanation}</div>`;
+    conditionsList.appendChild(li);
+});
+conditionsList.addEventListener('click', (e) => {
+    const expand = e.target.closest('.expandable');
+    if (!expand) return;
+    const parent = expand.parentElement;
+    parent.classList.toggle('open');
+    const expl = parent.querySelector('.explanation');
+    expl.classList.toggle('hidden');
+});
+
+// ApexCharts: Confidence scores bar chart
+const chartOptions = {
+    chart: {
+        type: 'bar',
+        height: 240,
+        toolbar: {
+            show: true
+        }
+    },
+    series: [{
+        name: 'Confidence',
+        data: caseData.aiResults.conditions.map(c => (c.confidenceScore * 100).toFixed(1))
+    }],
+    xaxis: {
+        categories: caseData.aiResults.conditions.map(c => c.conditionName),
+        labels: {
+            rotate: -15
+        }
+    },
+    colors: ['#2563eb'],
+    dataLabels: {
+        enabled: true
+    },
+    tooltip: {
+        enabled: true
+    },
+    responsive: [{
+        breakpoint: 640,
+        options: {
+            xaxis: {
+                labels: {
+                    rotate: 0
+                }
+            }
+        }
+    }]
+};
+const chart = new ApexCharts(document.querySelector('#confidenceChart'), chartOptions);
+chart.render();
+
+// Voice Narration using Web Speech API
+const voiceNarrate = document.getElementById('voiceNarrate');
+voiceNarrate.addEventListener('click', () => {
+    const summary = `Case ${caseData.caseId}. Urgency ${caseData.aiResults.urgency}. Top condition ${caseData.aiResults.conditions[0].conditionName} with confidence ${(caseData.aiResults.conditions[0].confidenceScore*100).toFixed(1)} percent.`;
+    if ('speechSynthesis' in window) {
+        const utt = new SpeechSynthesisUtterance(summary);
+        utt.rate = 1;
+        utt.pitch = 1;
+        utt.lang = 'en-US';
+        speechSynthesis.speak(utt);
+    } else {
+        Swal.fire({
+            icon: 'info',
+            title: 'Narration unavailable',
+            text: 'Your browser does not support speech synthesis.'
+        });
+    }
+});
+
+// Role toggling between Doctor and Patient view
+const roleRadios = document.querySelectorAll('input[name="roleView"]');
+const decisionGroup = document.getElementById('decisionGroup');
+const notesTextarea = document.getElementById('notesTextarea');
+const submitReviewBtn = document.getElementById('submitReviewBtn');
+const finalDiagnosisDisplay = document.getElementById('finalDiagnosisDisplay');
+const caseStatusLabel = document.getElementById('caseStatusLabel');
+let selectedDecision = null;
+
+roleRadios.forEach(r => r.addEventListener('change', () => {
+    const role = document.querySelector('input[name="roleView"]:checked').value;
+    if (role === 'Patient') {
+        // Patient view: read-only
+        decisionGroup.classList.add('hidden');
+        notesTextarea.setAttribute('readonly', 'readonly');
+        notesTextarea.classList.add('bg-gray-100');
+        submitReviewBtn.classList.add('hidden');
+        finalDiagnosisDisplay.classList.remove('hidden');
+    } else {
+        // Doctor view
+        notesTextarea.removeAttribute('readonly');
+        notesTextarea.classList.remove('bg-gray-100');
+        submitReviewBtn.classList.remove('hidden');
+        if (caseData.status === 'Pending Doctor Review') {
+            decisionGroup.classList.remove('hidden');
+            finalDiagnosisDisplay.classList.add('hidden');
+        } else {
+            decisionGroup.classList.add('hidden');
+            finalDiagnosisDisplay.classList.remove('hidden');
+        }
+    }
+}));
+
+// Decision selection buttons
+decisionGroup.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-decision]');
+    if (!btn) return;
+    selectedDecision = btn.getAttribute('data-decision');
+    document.getElementById('selectedDecisionLabel').textContent = `Selected: ${selectedDecision}`;
+    validateSubmitReady();
+});
+notesTextarea.addEventListener('input', validateSubmitReady);
+
+function validateSubmitReady() {
+    const notesOk = notesTextarea.value.trim().length > 0;
+    const ready = selectedDecision && notesOk;
+    submitReviewBtn.disabled = !ready;
+}
+
+// Submit review
+submitReviewBtn.addEventListener('click', async () => {
+    const role = document.querySelector('input[name="roleView"]:checked').value;
+    if (role !== 'Doctor') {
+        return;
+    }
+    const notes = notesTextarea.value.trim();
+    if (!selectedDecision || !notes) {
+        return Swal.fire({
+            icon: 'warning',
+            title: 'Incomplete',
+            text: 'Please select a decision and enter notes.'
+        });
+    }
+    // Simulate API call
+    submitReviewBtn.disabled = true;
+    submitReviewBtn.textContent = 'Submitting...';
+    await new Promise(res => setTimeout(res, 1000));
+    caseData.review = {
+        status: selectedDecision,
+        doctorName: 'Dr. Sam Lee',
+        reviewDate: new Date().toISOString().slice(0, 10),
+        notes
+    };
+    caseData.status = selectedDecision === 'Confirm' ? 'Confirmed' : 'Rejected';
+    caseStatusLabel.textContent = `Status: ${caseData.status}`;
+    document.getElementById('finalStatus').textContent = caseData.review.status;
+    document.getElementById('reviewDoctor').textContent = caseData.review.doctorName;
+    document.getElementById('reviewDate').textContent = caseData.review.reviewDate;
+    document.getElementById('finalNotes').textContent = caseData.review.notes;
+    decisionGroup.classList.add('hidden');
+    finalDiagnosisDisplay.classList.remove('hidden');
+    submitReviewBtn.textContent = 'Submit Review';
+    Swal.fire({
+        icon: 'success',
+        title: 'Review submitted',
+        text: 'The patient will be notified about your decision.'
+    });
+});
+
+// Simulate loading skeleton for patient summary
+const psSkeleton = document.getElementById('patientSummarySkeleton');
+psSkeleton.classList.remove('hidden');
+setTimeout(() => psSkeleton.classList.add('hidden'), 500);
+  </script>
+ </body>
+</html>

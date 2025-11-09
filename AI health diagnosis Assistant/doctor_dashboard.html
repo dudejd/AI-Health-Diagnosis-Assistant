@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html class="h-full" lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Doctor Dashboard
+  </title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkfQKbZg7Z7rC1j0bX8M7V9mYV1dMceYF1U9Qv7n3VvP2vvZBBOiV3u0A==" referrerpolicy="no-referrer" rel="stylesheet">
+   <script src="https://cdn.tailwindcss.com">
+   </script>
+   <link href="style.css" rel="stylesheet"/>
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+   </script>
+   <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+   </script>
+   <style>
+    /* doctor_dashboard.css - Page specific enhancements only (kept minimal) */
+    html, body { height: 100%; }
+    body { font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji'; }
+    /* Maintain fixed header + left sidebar layout (header/aside provided components define positioning) */
+
+    /* Accessibility mode: increase base size and contrast without changing layout */
+    .accessibility-mode body, .accessibility-mode main { font-size: 19px; line-height: 1.65; }
+    .accessibility-mode .high-contrast { filter: contrast(1.15); }
+    .accessibility-mode .focus-ring:focus { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+    /* Tabs underline animation */
+    .tab-active { color: #1f2937; border-color: #2563eb; }
+
+    /* Off-canvas notification panel */
+    #notifPanel { transform: translateX(100%); transition: transform 0.3s ease; }
+    #notifPanel.open { transform: translateX(0); }
+
+    /* Help assistant floating widget */
+    #helpAssistantPanel { transform: translateY(100%); transition: transform 0.3s ease; }
+    #helpAssistantPanel.open { transform: translateY(0); }
+
+    /* Table row hover */
+    .row-hover:hover { background-color: rgba(37, 99, 235, 0.06); cursor: pointer; }
+
+    /* Simple skeleton shimmer for loading */
+    .skeleton { position: relative; overflow: hidden; background: #e5e7eb; }
+    .skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); animation: shimmer 1.2s infinite; }
+    @keyframes shimmer { 100% { transform: translateX(100%); } }
+   </style>
+  </link>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="h-full bg-gray-50 text-gray-800">
+  <!-- Header (Common Component) -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <div class="flex items-center gap-3">
+      <button class="md:hidden inline-flex items-center px-2 py-2 rounded-md bg-white/20" id="sidebarToggle">
+       <i class="fa-solid fa-bars">
+       </i>
+      </button>
+      <a class="flex items-center gap-2" href="./doctor_dashboard.html">
+       <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+        <i class="fa-solid fa-heart-pulse">
+        </i>
+       </span>
+       <span class="font-semibold tracking-wide">
+        Doctor Portal
+       </span>
+      </a>
+     </div>
+     <div class="hidden md:flex items-center gap-4 flex-1 justify-center">
+      <div class="w-full max-w-lg relative">
+       <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/70">
+       </i>
+       <input class="w-full pl-9 pr-3 py-2 rounded-md bg-white/20 placeholder-white/70 focus:bg-white/30 focus:outline-none" id="globalSearch" placeholder="Search cases (ID, patient name, status)..." type="search"/>
+      </div>
+     </div>
+     <div class="flex items-center gap-2">
+      <a class="hidden sm:inline-flex px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./doctor_dashboard.html#pending">
+       Go to Queue
+      </a>
+      <button aria-label="Notifications" class="p-2 rounded-md hover:bg-white/20" id="notifBtn">
+       <i class="fa-regular fa-bell">
+       </i>
+      </button>
+      <button aria-label="Messages" class="p-2 rounded-md hover:bg-white/20">
+       <i class="fa-regular fa-envelope">
+       </i>
+      </button>
+      <div class="relative">
+       <button class="inline-flex items-center gap-2 px-2 py-2 rounded-md hover:bg-white/20" id="profileMenuBtn">
+        <i class="fa-regular fa-user">
+        </i>
+        <span class="hidden sm:inline">
+         Profile
+        </span>
+        <i class="fa-solid fa-chevron-down text-xs">
+        </i>
+       </button>
+       <div class="absolute right-0 mt-2 w-44 bg-white text-gray-700 rounded-md shadow-lg overflow-hidden hidden" id="profileMenu">
+        <a class="block px-4 py-2 hover:bg-gray-100" href="./settings_page.html">
+         Settings
+        </a>
+        <button class="w-full text-left px-4 py-2 hover:bg-gray-100" onclick="window.location.href='./login_page.html'">
+         Logout
+        </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+    const pb = document.getElementById('profileMenuBtn');
+    const pm = document.getElementById('profileMenu');
+    if (pb && pm) {
+        pb.addEventListener('click', () => pm.classList.toggle('hidden'));
+    }
+    document.addEventListener('click', (e) => {
+        const pm = document.getElementById('profileMenu');
+        const pb = document.getElementById('profileMenuBtn');
+        if (pm && !pm.classList.contains('hidden') && !pb.contains(e.target) && !pm.contains(e.target)) {
+            pm.classList.add('hidden');
+        }
+    });
+})();
+   </script>
+  </header>
+  <!-- Sidebar (Common Component) -->
+  <aside class="mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 text-gray-700">
+    <p class="px-3 pb-2 text-xs uppercase tracking-wide text-gray-500">
+     Queue
+    </p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF] font-semibold" href="./doctor_dashboard.html">
+     <i class="fa-solid fa-gauge text-[#008080]">
+     </i>
+     <span>
+      Dashboard
+     </span>
+    </a>
+    <details class="group mt-2">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-clipboard-list text-[#008080]">
+      </i>
+      <span>
+       Cases
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#pending">
+       Pending Review
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#confirmed">
+       Confirmed
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./doctor_dashboard.html#rejected">
+       Rejected
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./case_review_page.html">
+       Review Case
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./case_details_page.html">
+       Case Details
+      </a>
+     </div>
+    </details>
+    <div class="mt-4 border-t pt-4">
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./settings_page.html">
+      <i class="fa-solid fa-gear text-[#008080]">
+      </i>
+      <span>
+       Settings
+      </span>
+     </a>
+     <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF]" href="./about_page.html">
+      <i class="fa-solid fa-life-ring text-[#008080]">
+      </i>
+      <span>
+       Support
+      </span>
+     </a>
+    </div>
+   </nav>
+  </aside>
+  <!-- Notification Panel (slides from right) -->
+  <aside class="fixed top-16 right-0 z-40 w-80 h-[calc(100vh-64px)] bg-white border-l border-gray-200 shadow-lg overflow-y-auto" id="notifPanel">
+   <div class="p-4 flex items-center justify-between border-b">
+    <h3 class="font-semibold">
+     Notifications
+    </h3>
+    <button aria-label="Close notifications" class="p-1 rounded hover:bg-gray-100" id="notifClose">
+     <i class="fa-solid fa-xmark">
+     </i>
+    </button>
+   </div>
+   <div class="p-4 space-y-3">
+    <div class="p-3 rounded-md border bg-blue-50 border-blue-200 text-blue-800 flex gap-2">
+     <i class="fa-solid fa-inbox mt-1">
+     </i>
+     <div>
+      <p class="text-sm">
+       3 new cases were assigned to you.
+      </p>
+      <span class="text-xs text-blue-600">
+       Just now
+      </span>
+     </div>
+    </div>
+    <div class="p-3 rounded-md border bg-green-50 border-green-200 text-green-800 flex gap-2">
+     <i class="fa-solid fa-check mt-1">
+     </i>
+     <div>
+      <p class="text-sm">
+       Case C-10019 was confirmed.
+      </p>
+      <span class="text-xs text-green-700">
+       15m ago
+      </span>
+     </div>
+    </div>
+    <div class="p-3 rounded-md border bg-yellow-50 border-yellow-200 text-yellow-800 flex gap-2">
+     <i class="fa-solid fa-triangle-exclamation mt-1">
+     </i>
+     <div>
+      <p class="text-sm">
+       Follow-up needed on Case C-10015.
+      </p>
+      <span class="text-xs text-yellow-700">
+       1h ago
+      </span>
+     </div>
+    </div>
+   </div>
+  </aside>
+  <!-- Main Content -->
+  <main class="mt-16 md:ml-64 min-h-[calc(100vh-64px)]">
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+     <div>
+      <h1 class="text-2xl md:text-3xl font-semibold text-gray-900">
+       Doctor Dashboard
+      </h1>
+      <p class="text-gray-600 mt-1">
+       View, manage, and prioritize your patient case reviews.
+      </p>
+     </div>
+     <div class="flex items-center gap-2">
+      <a class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/90" href="./new_diagnosis_page.html">
+       <i class="fa-solid fa-plus">
+       </i>
+       New Diagnosis
+      </a>
+      <button class="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-100 focus-ring" id="accessibilityToggle" title="Toggle accessibility mode">
+       <i class="fa-solid fa-universal-access">
+       </i>
+       Accessibility
+      </button>
+     </div>
+    </div>
+    <!-- User Views Tabs -->
+    <div class="mt-6 border-b border-gray-200">
+     <nav aria-label="Tabs" class="-mb-px flex gap-6">
+      <button class="tab-btn border-b-2 border-transparent py-3 text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300 tab-active" data-tab="myQueue">
+       My Queue
+      </button>
+      <button class="tab-btn border-b-2 border-transparent py-3 text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-tab="allCases">
+       All Cases
+      </button>
+      <button class="tab-btn border-b-2 border-transparent py-3 text-sm font-medium text-gray-600 hover:text-gray-800 hover:border-gray-300" data-tab="analytics">
+       Analytics
+      </button>
+     </nav>
+    </div>
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6" id="kpiCards">
+     <div class="card p-4 rounded-lg bg-white shadow-sm border border-gray-200">
+      <div class="flex items-center justify-between">
+       <div>
+        <p class="text-sm text-gray-500">
+         Pending Review
+        </p>
+        <p class="text-2xl font-semibold text-gray-900" id="kpiPending">
+         --
+        </p>
+       </div>
+       <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+        <i class="fa-solid fa-clipboard-list">
+        </i>
+       </span>
+      </div>
+     </div>
+     <div class="card p-4 rounded-lg bg-white shadow-sm border border-gray-200">
+      <div class="flex items-center justify-between">
+       <div>
+        <p class="text-sm text-gray-500">
+         Confirmed
+        </p>
+        <p class="text-2xl font-semibold text-gray-900" id="kpiConfirmed">
+         --
+        </p>
+       </div>
+       <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-50 text-green-600">
+        <i class="fa-solid fa-check">
+        </i>
+       </span>
+      </div>
+     </div>
+     <div class="card p-4 rounded-lg bg-white shadow-sm border border-gray-200">
+      <div class="flex items-center justify-between">
+       <div>
+        <p class="text-sm text-gray-500">
+         Rejected
+        </p>
+        <p class="text-2xl font-semibold text-gray-900" id="kpiRejected">
+         --
+        </p>
+       </div>
+       <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+        <i class="fa-solid fa-xmark">
+        </i>
+       </span>
+      </div>
+     </div>
+     <div class="card p-4 rounded-lg bg-white shadow-sm border border-gray-200">
+      <div class="flex items-center justify-between">
+       <div>
+        <p class="text-sm text-gray-500">
+         Avg. Review Time
+        </p>
+        <p class="text-2xl font-semibold text-gray-900" id="kpiAvgTime">
+         --
+        </p>
+       </div>
+       <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-yellow-50 text-yellow-600">
+        <i class="fa-solid fa-hourglass-half">
+        </i>
+       </span>
+      </div>
+     </div>
+    </div>
+    <!-- Filter Bar -->
+    <div class="mt-6 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+     <div class="flex flex-col lg:flex-row gap-4 lg:items-end lg:justify-between">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
+       <!-- Search -->
+       <div>
+        <label class="block text-sm text-gray-600 mb-1" for="searchInput">
+         Search
+        </label>
+        <div class="relative">
+         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+         </i>
+         <input class="w-full pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" id="searchInput" placeholder="Patient name or Case ID" type="text"/>
+        </div>
+       </div>
+       <!-- Status -->
+       <div>
+        <label class="block text-sm text-gray-600 mb-1" for="statusSelect">
+         Status
+        </label>
+        <select class="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" id="statusSelect">
+         <option>
+          Pending Doctor Review
+         </option>
+         <option>
+          All
+         </option>
+         <option>
+          Confirmed
+         </option>
+         <option>
+          Rejected
+         </option>
+        </select>
+       </div>
+       <!-- Date From -->
+       <div>
+        <label class="block text-sm text-gray-600 mb-1" for="dateFrom">
+         From
+        </label>
+        <input class="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" id="dateFrom" type="date"/>
+       </div>
+       <!-- Date To -->
+       <div>
+        <label class="block text-sm text-gray-600 mb-1" for="dateTo">
+         To
+        </label>
+        <input class="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" id="dateTo" type="date"/>
+       </div>
+      </div>
+      <div class="flex items-center gap-2">
+       <button class="px-4 py-2 rounded-md bg-[#0000FF] text-white hover:bg-blue-700" id="applyFilters">
+        <i class="fa-solid fa-filter">
+        </i>
+        Apply
+       </button>
+       <button class="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100" id="resetFilters">
+        <i class="fa-solid fa-rotate-left">
+        </i>
+        Reset
+       </button>
+      </div>
+     </div>
+    </div>
+    <!-- Content Sections by Tabs -->
+    <section class="mt-6" id="tab-myQueue">
+     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Table -->
+      <div class="lg:col-span-2">
+       <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div class="px-4 py-3 border-b flex items-center justify-between">
+         <h2 class="font-semibold">
+          Assigned Cases
+         </h2>
+         <div class="text-sm text-gray-500" id="paginationInfo">
+          Loading...
+         </div>
+        </div>
+        <div class="overflow-x-auto" id="tableContainer">
+         <!-- Loading skeleton -->
+         <div class="p-4 space-y-2" id="tableLoading">
+          <div class="h-8 skeleton rounded">
+          </div>
+          <div class="h-6 skeleton rounded">
+          </div>
+          <div class="h-6 skeleton rounded">
+          </div>
+          <div class="h-6 skeleton rounded">
+          </div>
+         </div>
+         <table class="min-w-full hidden" id="caseTable">
+          <thead class="bg-gray-50">
+           <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+             <button class="flex items-center gap-1" data-sort="caseId">
+              Case ID
+              <i class="fa-solid fa-sort text-gray-400">
+              </i>
+             </button>
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+             <button class="flex items-center gap-1" data-sort="patientName">
+              Patient
+              <i class="fa-solid fa-sort text-gray-400">
+              </i>
+             </button>
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+             <button class="flex items-center gap-1" data-sort="submissionDate">
+              Submitted
+              <i class="fa-solid fa-sort text-gray-400">
+              </i>
+             </button>
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+             Symptom
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+             Status
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+             Action
+            </th>
+           </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200" id="tableBody">
+          </tbody>
+         </table>
+        </div>
+        <div class="px-4 py-3 border-t flex items-center justify-between">
+         <div class="text-sm text-gray-600">
+          <label class="mr-2">
+           Rows per page:
+          </label>
+          <select class="px-2 py-1 border rounded" id="pageSize">
+           <option>
+            6
+           </option>
+           <option>
+            10
+           </option>
+           <option>
+            20
+           </option>
+          </select>
+         </div>
+         <div class="flex items-center gap-2">
+          <button class="px-3 py-1 border rounded hover:bg-gray-100" id="prevPage">
+           <i class="fa-solid fa-chevron-left">
+           </i>
+          </button>
+          <span class="text-sm text-gray-600" id="pageIndicator">
+           1
+          </span>
+          <button class="px-3 py-1 border rounded hover:bg-gray-100" id="nextPage">
+           <i class="fa-solid fa-chevron-right">
+           </i>
+          </button>
+         </div>
+        </div>
+       </div>
+      </div>
+      <!-- Chart Card -->
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+       <div class="flex items-center justify-between">
+        <h3 class="font-semibold">
+         Cases This Week
+        </h3>
+        <button class="text-sm px-3 py-1 rounded border hover:bg-gray-100" id="refreshChart">
+         <i class="fa-solid fa-rotate">
+         </i>
+         Refresh
+        </button>
+       </div>
+       <div class="mt-4" id="weeklyChart">
+       </div>
+      </div>
+     </div>
+    </section>
+    <section class="mt-6 hidden" id="tab-allCases">
+     <div class="bg-blue-50 border border-blue-200 text-blue-900 rounded p-3 text-sm">
+      All cases view shows every case regardless of assignment. Use filters to refine.
+     </div>
+     <div class="mt-4">
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+       <div class="px-4 py-3 border-b flex items-center justify-between">
+        <h2 class="font-semibold">
+         All Cases
+        </h2>
+        <div class="text-sm text-gray-500" id="paginationInfoAll">
+         Loading...
+        </div>
+       </div>
+       <div class="overflow-x-auto" id="tableContainerAll">
+        <div class="p-4 space-y-2" id="tableLoadingAll">
+         <div class="h-8 skeleton rounded">
+         </div>
+         <div class="h-6 skeleton rounded">
+         </div>
+         <div class="h-6 skeleton rounded">
+         </div>
+        </div>
+        <table class="min-w-full hidden" id="caseTableAll">
+         <thead class="bg-gray-50">
+          <tr>
+           <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <button class="flex items-center gap-1" data-sort-all="caseId">
+             Case ID
+             <i class="fa-solid fa-sort text-gray-400">
+             </i>
+            </button>
+           </th>
+           <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <button class="flex items-center gap-1" data-sort-all="patientName">
+             Patient
+             <i class="fa-solid fa-sort text-gray-400">
+             </i>
+            </button>
+           </th>
+           <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <button class="flex items-center gap-1" data-sort-all="submissionDate">
+             Submitted
+             <i class="fa-solid fa-sort text-gray-400">
+             </i>
+            </button>
+           </th>
+           <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Symptom
+           </th>
+           <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Status
+           </th>
+           <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Action
+           </th>
+          </tr>
+         </thead>
+         <tbody class="bg-white divide-y divide-gray-200" id="tableBodyAll">
+         </tbody>
+        </table>
+       </div>
+       <div class="px-4 py-3 border-t flex items-center justify-between">
+        <div class="text-sm text-gray-600">
+         <label class="mr-2">
+          Rows per page:
+         </label>
+         <select class="px-2 py-1 border rounded" id="pageSizeAll">
+          <option>
+           6
+          </option>
+          <option>
+           10
+          </option>
+          <option>
+           20
+          </option>
+         </select>
+        </div>
+        <div class="flex items-center gap-2">
+         <button class="px-3 py-1 border rounded hover:bg-gray-100" id="prevPageAll">
+          <i class="fa-solid fa-chevron-left">
+          </i>
+         </button>
+         <span class="text-sm text-gray-600" id="pageIndicatorAll">
+          1
+         </span>
+         <button class="px-3 py-1 border rounded hover:bg-gray-100" id="nextPageAll">
+          <i class="fa-solid fa-chevron-right">
+          </i>
+         </button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section>
+    <section class="mt-6 hidden" id="tab-analytics">
+     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+       <h3 class="font-semibold">
+        Cases Over Time
+       </h3>
+       <div class="mt-4" id="casesOverTimeChart">
+       </div>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+       <h3 class="font-semibold">
+        Status Distribution
+       </h3>
+       <div class="mt-4" id="statusDonutChart">
+       </div>
+      </div>
+     </div>
+    </section>
+    <!-- Live region for screen readers (feedback) -->
+    <div aria-live="polite" class="sr-only" id="srFeedback">
+    </div>
+   </section>
+  </main>
+  <!-- Help Assistant (floating) -->
+  <div class="fixed bottom-4 right-4 z-40">
+   <button class="rounded-full h-12 w-12 bg-[#0000FF] text-white shadow-lg flex items-center justify-center hover:bg-blue-700" id="helpToggle" title="Open help assistant">
+    <i class="fa-solid fa-circle-question text-xl">
+    </i>
+   </button>
+   <div class="mt-3 w-80 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden" id="helpAssistantPanel">
+    <div class="p-3 border-b flex items-center justify-between">
+     <div class="flex items-center gap-2">
+      <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+       <i class="fa-solid fa-heart-pulse">
+       </i>
+      </span>
+      <span class="font-medium">
+       Assistant
+      </span>
+     </div>
+     <button class="p-1 rounded hover:bg-gray-100" id="helpClose">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <div class="p-3 space-y-3 text-sm">
+     <p>
+      Hi Doctor! Need help finding a case or using filters?
+     </p>
+     <ul class="list-disc pl-5 space-y-1">
+      <li>
+       Use the search to find by Case ID or Patient name.
+      </li>
+      <li>
+       Default filter is Pending Doctor Review.
+      </li>
+      <li>
+       Click a row to open the case review.
+      </li>
+     </ul>
+     <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+      <span class="text-sm">
+       Voice narration
+      </span>
+      <label class="inline-flex items-center cursor-pointer">
+       <input class="sr-only" id="voiceToggle" type="checkbox"/>
+       <span class="w-10 h-5 bg-gray-300 rounded-full relative">
+        <span class="dot absolute left-0 top-0 w-5 h-5 bg-white rounded-full shadow transition-transform">
+        </span>
+       </span>
+      </label>
+     </div>
+     <div class="flex items-center gap-2">
+      <button class="flex-1 px-3 py-2 rounded-md border hover:bg-gray-100" id="readSummary">
+       <i class="fa-solid fa-volume-high">
+       </i>
+       Read page summary
+      </button>
+      <a class="px-3 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/90 text-sm" href="./about_page.html">
+       Support
+      </a>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- Footer (Common Component) -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      Doctor Portal
+     </span>
+    </div>
+    <div class="flex items-center gap-4">
+     <a class="px-3 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/80 text-sm" href="./doctor_dashboard.html#pending">
+      View Pending
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      Terms
+     </a>
+     <a class="text-sm hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      Privacy
+     </a>
+    </div>
+   </div>
+  </footer>
+  <script>
+   // Tailwind quick toggle for help assistant switch dot
+const voiceToggle = document.getElementById('voiceToggle');
+if (voiceToggle) {
+    voiceToggle.addEventListener('change', () => {
+        const dot = voiceToggle.parentElement.querySelector('.dot');
+        if (voiceToggle.checked) dot.style.transform = 'translateX(100%)';
+        else dot.style.transform = 'translateX(0)';
+    });
+}
+
+// Notification panel toggle
+const notifBtn = document.getElementById('notifBtn');
+const notifPanel = document.getElementById('notifPanel');
+const notifClose = document.getElementById('notifClose');
+if (notifBtn && notifPanel) notifBtn.addEventListener('click', () => notifPanel.classList.toggle('open'));
+if (notifClose && notifPanel) notifClose.addEventListener('click', () => notifPanel.classList.remove('open'));
+
+// Help assistant toggle
+const helpToggle = document.getElementById('helpToggle');
+const helpPanel = document.getElementById('helpAssistantPanel');
+const helpClose = document.getElementById('helpClose');
+if (helpToggle && helpPanel) helpToggle.addEventListener('click', () => helpPanel.classList.toggle('open'));
+if (helpClose && helpPanel) helpClose.addEventListener('click', () => helpPanel.classList.remove('open'));
+
+// Accessibility mode toggle
+const accToggle = document.getElementById('accessibilityToggle');
+if (accToggle) accToggle.addEventListener('click', () => {
+    document.documentElement.classList.toggle('accessibility-mode');
+    Swal.fire({
+        toast: true,
+        position: 'bottom',
+        timer: 1800,
+        showConfirmButton: false,
+        icon: 'success',
+        title: document.documentElement.classList.contains('accessibility-mode') ? 'Accessibility mode on' : 'Accessibility mode off'
+    });
+});
+
+// Onboarding coach mark (once)
+(function() {
+    if (!localStorage.getItem('doctorDashboardOnboarded')) {
+        Swal.fire({
+            title: 'Welcome to your Dashboard',
+            html: '<div style="text-align:left">\
+                <p>• Use the filter bar to narrow your queue.</p>\
+                <p>• Click a row to review a case.</p>\
+                <p>• Access notifications from the bell icon.</p></div>',
+            icon: 'info',
+            confirmButtonText: 'Got it',
+            confirmButtonColor: '#2563eb'
+        }).then(() => localStorage.setItem('doctorDashboardOnboarded', '1'));
+    }
+})();
+
+// Data and state
+const sampleCases = [{
+    caseId: 'C-10023',
+    patientName: 'John Doe',
+    submissionDate: '2025-10-10',
+    primarySymptom: 'Chest pain',
+    currentStatus: 'Pending Doctor Review'
+}, {
+    caseId: 'C-10024',
+    patientName: 'Jane Smith',
+    submissionDate: '2025-10-11',
+    primarySymptom: 'Shortness of breath',
+    currentStatus: 'Pending Doctor Review'
+}, {
+    caseId: 'C-10019',
+    patientName: 'Robert Brown',
+    submissionDate: '2025-10-09',
+    primarySymptom: 'Fever and cough',
+    currentStatus: 'Confirmed'
+}, {
+    caseId: 'C-10015',
+    patientName: 'Emily Davis',
+    submissionDate: '2025-10-08',
+    primarySymptom: 'Headache',
+    currentStatus: 'Rejected'
+}, {
+    caseId: 'C-10028',
+    patientName: 'Michael Johnson',
+    submissionDate: '2025-10-12',
+    primarySymptom: 'Back pain',
+    currentStatus: 'Pending Doctor Review'
+}, {
+    caseId: 'C-10026',
+    patientName: 'Olivia Wilson',
+    submissionDate: '2025-10-11',
+    primarySymptom: 'Abdominal pain',
+    currentStatus: 'Pending Doctor Review'
+}, {
+    caseId: 'C-10018',
+    patientName: 'Ava Martinez',
+    submissionDate: '2025-10-09',
+    primarySymptom: 'Fatigue',
+    currentStatus: 'Confirmed'
+}, {
+    caseId: 'C-10022',
+    patientName: 'Liam Garcia',
+    submissionDate: '2025-10-10',
+    primarySymptom: 'Dizziness',
+    currentStatus: 'Pending Doctor Review'
+}, {
+    caseId: 'C-10012',
+    patientName: 'Sophia Rodriguez',
+    submissionDate: '2025-10-07',
+    primarySymptom: 'Nausea',
+    currentStatus: 'Rejected'
+}, {
+    caseId: 'C-10030',
+    patientName: 'William Lee',
+    submissionDate: '2025-10-12',
+    primarySymptom: 'Rash',
+    currentStatus: 'Confirmed'
+}];
+
+const state = {
+    myQueue: {
+        data: [...sampleCases],
+        filters: {
+            search: '',
+            status: 'Pending Doctor Review',
+            from: '',
+            to: ''
+        },
+        page: 1,
+        pageSize: 6,
+        sort: {
+            col: 'submissionDate',
+            dir: 'desc'
+        }
+    },
+    allCases: {
+        data: [...sampleCases],
+        filters: {
+            search: '',
+            status: 'All',
+            from: '',
+            to: ''
+        },
+        page: 1,
+        pageSize: 6,
+        sort: {
+            col: 'submissionDate',
+            dir: 'desc'
+        }
+    }
+};
+
+// Utilities
+const fmtDate = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+});
+const cmp = (a, b, dir) => dir === 'asc' ? (a > b ? 1 : a < b ? -1 : 0) : (a < b ? 1 : a > b ? -1 : 0);
+const byCol = (col) => (a, b) => cmp(a[col], b[col], (activeTab() === 'myQueue' ? state.myQueue.sort.dir : state.allCases.sort.dir));
+const inRange = (date, from, to) => {
+    const d = new Date(date);
+    const f = from ? new Date(from) : null;
+    const t = to ? new Date(to) : null;
+    if (f && d < f) return false;
+    if (t && d > t) return false;
+    return true;
+};
+
+// DOM refs
+const searchInput = document.getElementById('searchInput');
+const statusSelect = document.getElementById('statusSelect');
+const dateFrom = document.getElementById('dateFrom');
+const dateTo = document.getElementById('dateTo');
+const applyBtn = document.getElementById('applyFilters');
+const resetBtn = document.getElementById('resetFilters');
+
+// Tabs
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSections = {
+    myQueue: document.getElementById('tab-myQueue'),
+    allCases: document.getElementById('tab-allCases'),
+    analytics: document.getElementById('tab-analytics')
+};
+
+function activeTab() {
+    return [...tabButtons].find(b => b.classList.contains('tab-active'))?.dataset.tab || 'myQueue';
+}
+tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('tab-active'));
+        btn.classList.add('tab-active');
+        Object.values(tabSections).forEach(sec => sec.classList.add('hidden'));
+        tabSections[btn.dataset.tab].classList.remove('hidden');
+        // Update filter defaults on tab switch
+        if (btn.dataset.tab === 'myQueue') {
+            statusSelect.value = 'Pending Doctor Review';
+        } else if (btn.dataset.tab === 'allCases') {
+            statusSelect.value = 'All';
+        }
+        searchInput.value = '';
+        dateFrom.value = '';
+        dateTo.value = '';
+        applyFilters();
+        if (btn.dataset.tab === 'analytics') renderAnalytics();
+    });
+});
+
+// Apply/Reset Filters
+function applyFilters() {
+    const tab = activeTab();
+    const scope = tab === 'myQueue' ? state.myQueue : state.allCases;
+    scope.filters.search = (searchInput.value || '').trim().toLowerCase();
+    scope.filters.status = statusSelect.value;
+    scope.filters.from = dateFrom.value;
+    scope.filters.to = dateTo.value;
+    scope.page = 1;
+    render();
+}
+
+function resetFilters() {
+    const tab = activeTab();
+    const scope = tab === 'myQueue' ? state.myQueue : state.allCases;
+    scope.filters = {
+        search: '',
+        status: tab === 'myQueue' ? 'Pending Doctor Review' : 'All',
+        from: '',
+        to: ''
+    };
+    if (tab === 'myQueue') statusSelect.value = 'Pending Doctor Review';
+    else statusSelect.value = 'All';
+    searchInput.value = '';
+    dateFrom.value = '';
+    dateTo.value = '';
+    scope.page = 1;
+    render();
+}
+applyBtn.addEventListener('click', applyFilters);
+resetBtn.addEventListener('click', resetFilters);
+
+// Global header search ties into current tab
+const globalSearch = document.getElementById('globalSearch');
+if (globalSearch) {
+    globalSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            searchInput.value = globalSearch.value;
+            applyFilters();
+        }
+    });
+}
+
+// Sorting
+document.querySelectorAll('[data-sort]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const scope = state.myQueue;
+        if (scope.sort.col === btn.dataset.sort) scope.sort.dir = scope.sort.dir === 'asc' ? 'desc' : 'asc';
+        else {
+            scope.sort.col = btn.dataset.sort;
+            scope.sort.dir = 'asc';
+        }
+        renderMyQueue();
+    });
+});
+document.querySelectorAll('[data-sort-all]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const scope = state.allCases;
+        if (scope.sort.col === btn.dataset.sortAll) scope.sort.dir = scope.sort.dir === 'asc' ? 'desc' : 'asc';
+        else {
+            scope.sort.col = btn.dataset.sortAll;
+            scope.sort.dir = 'asc';
+        }
+        renderAllCases();
+    });
+});
+
+// Pagination controls
+document.getElementById('prevPage').addEventListener('click', () => {
+    if (state.myQueue.page > 1) {
+        state.myQueue.page--;
+        renderMyQueue();
+    }
+});
+document.getElementById('nextPage').addEventListener('click', () => {
+    state.myQueue.page++;
+    renderMyQueue();
+});
+document.getElementById('pageSize').addEventListener('change', (e) => {
+    state.myQueue.pageSize = parseInt(e.target.value, 10);
+    state.myQueue.page = 1;
+    renderMyQueue();
+});
+document.getElementById('prevPageAll').addEventListener('click', () => {
+    if (state.allCases.page > 1) {
+        state.allCases.page--;
+        renderAllCases();
+    }
+});
+document.getElementById('nextPageAll').addEventListener('click', () => {
+    state.allCases.page++;
+    renderAllCases();
+});
+document.getElementById('pageSizeAll').addEventListener('change', (e) => {
+    state.allCases.pageSize = parseInt(e.target.value, 10);
+    state.allCases.page = 1;
+    renderAllCases();
+});
+
+// Rendering
+function filterData(data, filters) {
+    return data.filter(c => {
+        const matchesSearch = !filters.search || (c.caseId.toLowerCase().includes(filters.search) || c.patientName.toLowerCase().includes(filters.search) || c.currentStatus.toLowerCase().includes(filters.search));
+        const matchesStatus = (filters.status === 'All') || c.currentStatus === filters.status;
+        const matchesDate = inRange(c.submissionDate, filters.from, filters.to);
+        return matchesSearch && matchesStatus && matchesDate;
+    });
+}
+
+function paginate(arr, page, pageSize) {
+    const start = (page - 1) * pageSize;
+    return [arr.slice(start, start + pageSize), Math.ceil(arr.length / pageSize)];
+}
+
+function renderMyQueue() {
+    // Loading state removal
+    document.getElementById('tableLoading').classList.add('hidden');
+    document.getElementById('caseTable').classList.remove('hidden');
+    const scope = state.myQueue;
+    // default filter to Pending on first load
+    document.getElementById('statusSelect').value = scope.filters.status;
+    const filtered = filterData(scope.data, scope.filters);
+    // sort
+    filtered.sort((a, b) => {
+        let av = a[scope.sort.col],
+            bv = b[scope.sort.col];
+        if (scope.sort.col === 'submissionDate') {
+            av = new Date(a.submissionDate);
+            bv = new Date(b.submissionDate);
+        }
+        return cmp(av, bv, scope.sort.dir);
+    });
+    const [pageItems, totalPages] = paginate(filtered, scope.page, scope.pageSize);
+    if (scope.page > totalPages && totalPages > 0) {
+        scope.page = totalPages;
+        return renderMyQueue();
+    }
+
+    // Populate table
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    pageItems.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.className = 'row-hover';
+        tr.innerHTML = `
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">${c.caseId}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${c.patientName}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${fmtDate(c.submissionDate)}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${c.primarySymptom}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm">
+            ${badgeForStatus(c.currentStatus)}
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm">
+            <div class="flex items-center gap-2">
+              <a class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700" href="./case_review_page.html?caseId=${encodeURIComponent(c.caseId)}">Review</a>
+              ${c.currentStatus==='Pending Doctor Review' ? `<button class="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700" data-confirm="${c.caseId}">Confirm</button>`:''}
+            </div>
+          </td>`;
+        // Row click -> navigate to case review
+        tr.addEventListener('click', (e) => {
+            if (e.target.closest('a') || e.target.closest('button')) return; // ignore actions
+            window.location.href = `./case_review_page.html?caseId=${encodeURIComponent(c.caseId)}`;
+        });
+        tbody.appendChild(tr);
+    });
+
+    // Actions
+    tbody.querySelectorAll('[data-confirm]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = btn.getAttribute('data-confirm');
+            Swal.fire({
+                title: 'Confirm diagnosis?',
+                text: `Mark ${id} as Confirmed`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, confirm',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#16a34a'
+            }).then(res => {
+                if (res.isConfirmed) {
+                    const item = state.myQueue.data.find(x => x.caseId === id);
+                    if (item) item.currentStatus = 'Confirmed';
+                    const item2 = state.allCases.data.find(x => x.caseId === id);
+                    if (item2) item2.currentStatus = 'Confirmed';
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Case confirmed',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    render();
+                }
+            });
+        });
+    });
+
+    // Pagination display
+    document.getElementById('pageIndicator').textContent = `${scope.page} / ${Math.max(totalPages,1)}`;
+    document.getElementById('paginationInfo').textContent = `Showing ${pageItems.length} of ${filtered.length} cases`;
+    document.getElementById('prevPage').disabled = scope.page <= 1;
+    document.getElementById('nextPage').disabled = scope.page >= totalPages;
+    // KPIs
+    updateKPIs();
+    // Chart refresh
+    renderWeeklyChart();
+}
+
+function renderAllCases() {
+    document.getElementById('tableLoadingAll').classList.add('hidden');
+    document.getElementById('caseTableAll').classList.remove('hidden');
+    const scope = state.allCases;
+    const filtered = filterData(scope.data, scope.filters).sort((a, b) => {
+        let av = a[scope.sort.col],
+            bv = b[scope.sort.col];
+        if (scope.sort.col === 'submissionDate') {
+            av = new Date(a.submissionDate);
+            bv = new Date(b.submissionDate);
+        }
+        return cmp(av, bv, scope.sort.dir);
+    });
+    const [pageItems, totalPages] = paginate(filtered, scope.page, scope.pageSize);
+    if (scope.page > totalPages && totalPages > 0) {
+        scope.page = totalPages;
+        return renderAllCases();
+    }
+
+    const tbody = document.getElementById('tableBodyAll');
+    tbody.innerHTML = '';
+    pageItems.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.className = 'row-hover';
+        tr.innerHTML = `
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">${c.caseId}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${c.patientName}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${fmtDate(c.submissionDate)}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${c.primarySymptom}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm">${badgeForStatus(c.currentStatus)}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm"><a class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700" href="./case_review_page.html?caseId=${encodeURIComponent(c.caseId)}">Review</a></td>`;
+        tr.addEventListener('click', (e) => {
+            if (e.target.closest('a') || e.target.closest('button')) return;
+            window.location.href = `./case_review_page.html?caseId=${encodeURIComponent(c.caseId)}`;
+        });
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('pageIndicatorAll').textContent = `${scope.page} / ${Math.max(totalPages,1)}`;
+    document.getElementById('paginationInfoAll').textContent = `Showing ${pageItems.length} of ${filtered.length} cases`;
+    document.getElementById('prevPageAll').disabled = scope.page <= 1;
+    document.getElementById('nextPageAll').disabled = scope.page >= totalPages;
+}
+
+function badgeForStatus(status) {
+    const map = {
+        'Pending Doctor Review': 'bg-yellow-100 text-yellow-800',
+        'Confirmed': 'bg-green-100 text-green-800',
+        'Rejected': 'bg-red-100 text-red-800'
+    };
+    return `<span class="px-2 py-1 rounded text-xs font-medium ${map[status] || 'bg-gray-100 text-gray-800'}">${status}</span>`;
+}
+
+function updateKPIs() {
+    const all = state.allCases.data;
+    const pending = all.filter(c => c.currentStatus === 'Pending Doctor Review').length;
+    const confirmed = all.filter(c => c.currentStatus === 'Confirmed').length;
+    const rejected = all.filter(c => c.currentStatus === 'Rejected').length;
+    document.getElementById('kpiPending').textContent = pending;
+    document.getElementById('kpiConfirmed').textContent = confirmed;
+    document.getElementById('kpiRejected').textContent = rejected;
+    // Mock average review time
+    document.getElementById('kpiAvgTime').textContent = '18h';
+}
+
+// Charts
+let weeklyChart, casesOverTimeChart, statusDonutChart;
+
+function renderWeeklyChart() {
+    const countsByDate = {};
+    // last 7 days
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        countsByDate[key] = 0;
+    }
+    state.allCases.data.forEach(c => {
+        if (countsByDate[c.submissionDate] !== undefined) countsByDate[c.submissionDate]++;
+    });
+    const categories = Object.keys(countsByDate);
+    const seriesData = categories.map(k => countsByDate[k]);
+    const opts = {
+        chart: {
+            type: 'area',
+            height: 260,
+            toolbar: {
+                show: false
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        xaxis: {
+            categories,
+            labels: {
+                rotate: -45
+            }
+        },
+        colors: ['#2563eb'],
+        series: [{
+            name: 'Cases',
+            data: seriesData
+        }],
+        tooltip: {
+            theme: 'light'
+        }
+    };
+    if (!weeklyChart) {
+        weeklyChart = new ApexCharts(document.querySelector('#weeklyChart'), opts);
+        weeklyChart.render();
+    } else {
+        weeklyChart.updateOptions(opts);
+    }
+}
+
+function renderAnalytics() {
+    // Over time (by day)
+    const countsByDate = {};
+    state.allCases.data.forEach(c => {
+        countsByDate[c.submissionDate] = (countsByDate[c.submissionDate] || 0) + 1;
+    });
+    const dates = Object.keys(countsByDate).sort();
+    const overSeries = dates.map(d => countsByDate[d]);
+    const overOpts = {
+        chart: {
+            type: 'line',
+            height: 320,
+            toolbar: {
+                show: true
+            }
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        dataLabels: {
+            enabled: false
+        },
+        xaxis: {
+            categories: dates
+        },
+        series: [{
+            name: 'Cases',
+            data: overSeries
+        }],
+        colors: ['#0ea5e9']
+    };
+    if (!casesOverTimeChart) {
+        casesOverTimeChart = new ApexCharts(document.querySelector('#casesOverTimeChart'), overOpts);
+        casesOverTimeChart.render();
+    } else {
+        casesOverTimeChart.updateOptions(overOpts);
+    }
+    // Status donut
+    const all = state.allCases.data;
+    const pending = all.filter(c => c.currentStatus === 'Pending Doctor Review').length;
+    const confirmed = all.filter(c => c.currentStatus === 'Confirmed').length;
+    const rejected = all.filter(c => c.currentStatus === 'Rejected').length;
+    const donutOpts = {
+        chart: {
+            type: 'donut',
+            height: 320
+        },
+        labels: ['Pending', 'Confirmed', 'Rejected'],
+        series: [pending, confirmed, rejected],
+        colors: ['#f59e0b', '#16a34a', '#dc2626'],
+        legend: {
+            position: 'bottom'
+        },
+        tooltip: {
+            theme: 'light'
+        }
+    };
+    if (!statusDonutChart) {
+        statusDonutChart = new ApexCharts(document.querySelector('#statusDonutChart'), donutOpts);
+        statusDonutChart.render();
+    } else {
+        statusDonutChart.updateOptions(donutOpts);
+    }
+}
+document.getElementById('refreshChart').addEventListener('click', renderWeeklyChart);
+
+// Voice narration
+function speak(text) {
+    if (!voiceToggle.checked) return;
+    try {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1;
+        utter.pitch = 1;
+        utter.lang = 'en-US';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+    } catch (e) {
+        console.warn('Speech not supported', e);
+    }
+}
+document.getElementById('readSummary').addEventListener('click', () => {
+    const summary = 'This dashboard shows assigned cases, with filters for status and date. Click a case row to open the review page. Use analytics for trends.';
+    speak(summary);
+    Swal.fire({
+        icon: 'info',
+        title: 'Narration',
+        text: 'Reading out page summary...',
+        timer: 1500,
+        showConfirmButton: false
+    });
+});
+
+// Render orchestrator
+function render() {
+    // Determine current tab and render corresponding
+    if (activeTab() === 'myQueue') renderMyQueue();
+    else if (activeTab() === 'allCases') renderAllCases();
+    else renderAnalytics();
+}
+
+// Initial load (simulate async load)
+setTimeout(() => {
+    // Pre-fill defaults for initial tab
+    statusSelect.value = 'Pending Doctor Review';
+    render();
+}, 600);
+
+// Anchor navigation to quick filters
+window.addEventListener('hashchange', () => {
+    const hash = location.hash.replace('#', '');
+    if (['pending', 'confirmed', 'rejected'].includes(hash)) {
+        document.querySelector('[data-tab="myQueue"]').click();
+        statusSelect.value = hash === 'pending' ? 'Pending Doctor Review' : hash.charAt(0).toUpperCase() + hash.slice(1);
+        applyFilters();
+    }
+});
+  </script>
+ </body>
+</html>

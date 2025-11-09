@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Features Page - AI Health Assistant
+  </title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <link href="style.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+   </script>
+   <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+   </script>
+   <script src="https://cdn.tailwindcss.com">
+   </script>
+   <style>
+    /* Page-specific styles for Features Page (features_page.css)
+       Keep minimal and avoid duplicating style.css rules */
+    body { font-family: 'Poppins', sans-serif; }
+    .accessibility-mode .page-content { font-size: 20px; line-height: 1.8; }
+    .accessibility-mode .hc { color: #000; background-color: #fff; }
+    .accessibility-mode .hc .card { border: 2px solid #000; }
+    .notification-panel { transition: transform 0.3s ease, opacity 0.3s ease; }
+    .notification-panel.hidden { transform: translateX(100%); opacity: 0; }
+    .notification-panel.visible { transform: translateX(0%); opacity: 1; }
+    .help-widget { transition: transform 0.3s ease, opacity 0.3s ease; }
+    .help-widget.hidden { transform: translateY(100%); opacity: 0; }
+    .help-widget.visible { transform: translateY(0%); opacity: 1; }
+    .coach-mark { position: absolute; z-index: 50; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 14px; }
+   </style>
+  </link>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="bg-gray-50 text-gray-800">
+  <!-- Header (fixed, common component) -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <a class="flex items-center gap-2" href="./home_page.html">
+      <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+       <i class="fa-solid fa-heart-pulse">
+       </i>
+      </span>
+      <span class="font-semibold tracking-wide">
+       AI Health Assistant
+      </span>
+     </a>
+     <div class="hidden md:flex items-center gap-6">
+      <a class="hover:underline hover:text-[#C7D2FE]" href="./features_page.html">
+       Features
+      </a>
+      <a class="hover:underline hover:text-[#C7D2FE]" href="./about_page.html">
+       About
+      </a>
+      <div class="relative">
+       <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/70">
+       </i>
+       <input class="pl-9 pr-3 py-2 rounded-md bg-white/20 placeholder-white/70 focus:bg-white/30 focus:outline-none" id="siteSearch" placeholder="Search site..." type="search"/>
+      </div>
+      <a class="px-3 py-2 rounded-md bg-white/20 hover:bg-white/30" href="./login_page.html">
+       Login
+      </a>
+      <a class="px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./registration_page.html">
+       Sign Up
+      </a>
+     </div>
+     <button class="md:hidden inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white/20" id="sidebarToggle">
+      Menu
+     </button>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+})();
+   </script>
+  </header>
+  <!-- Public Info Sidebar (include on Features page) -->
+  <aside class="mt-16 md:mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 space-y-2 text-gray-700">
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF] transition" href="./home_page.html">
+     <i class="fa-solid fa-house text-[#008080]">
+     </i>
+     <span>
+      Home
+     </span>
+    </a>
+    <a aria-current="page" class="flex items-center gap-3 px-3 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF] font-medium transition" href="./features_page.html">
+     <i class="fa-solid fa-sparkles text-[#008080]">
+     </i>
+     <span>
+      Features
+     </span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF] transition" href="./about_page.html">
+     <i class="fa-solid fa-circle-info text-[#008080]">
+     </i>
+     <span>
+      About
+     </span>
+    </a>
+    <details class="group">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-file-lines text-[#008080]">
+      </i>
+      <span>
+       Learn More
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./terms_of_service_page.html">
+       Terms of Service
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./privacy_policy_page.html">
+       Privacy Policy
+      </a>
+     </div>
+    </details>
+    <div class="mt-4 border-t pt-4">
+     <p class="text-xs text-gray-500">
+      Disclaimer: For informational purposes only.
+     </p>
+    </div>
+   </nav>
+  </aside>
+  <!-- Main Content -->
+  <main class="page-content mt-16 md:mt-16 md:ml-64 min-h-[calc(100vh-64px)]">
+   <!-- Features Hero -->
+   <section class="relative bg-[#0000FF]/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+     <div class="flex items-start justify-between">
+      <div class="max-w-2xl">
+       <h1 class="text-3xl md:text-4xl font-semibold text-[#1f2937]">
+        Intelligent Healthcare, Simplified.
+       </h1>
+       <p class="mt-3 text-gray-700">
+        Discover how our AI-powered platform assists both patients and doctors with smart diagnostics, secure data management, and streamlined workflows.
+       </p>
+       <div class="mt-6 flex items-center gap-3">
+        <button class="btn-outline px-4 py-2 rounded-md border border-[#0000FF] text-[#0000FF] hover:bg-[#0000FF] hover:text-white" id="narrateBtn">
+         <i class="fa-solid fa-headphones me-2">
+         </i>
+         Voice Narration
+        </button>
+        <button class="px-4 py-2 rounded-md bg-[#008080] text-white hover:bg-[#008080]/80" id="notifyToggle">
+         <i class="fa-solid fa-bell me-2">
+         </i>
+         Notifications
+        </button>
+        <button class="px-4 py-2 rounded-md bg-[#0000FF] text-white hover:bg-[#0000FF]/80" id="learnMoreCTA">
+         <i class="fa-solid fa-circle-info me-2">
+         </i>
+         Learn More
+        </button>
+        <label class="ml-auto inline-flex items-center gap-2 cursor-pointer" title="Toggle high-contrast, larger text">
+         <input class="accent-[#0000FF]" id="accessToggle" type="checkbox"/>
+         <span class="text-sm text-gray-700">
+          Accessibility Mode
+         </span>
+        </label>
+       </div>
+      </div>
+      <!-- Coach mark example -->
+      <div class="relative hidden md:block">
+       <div class="coach-mark right-0 -mt-4">
+        Tip: Use Notifications to see updates
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <!-- User Views Tabs -->
+   <section class="bg-white border-t border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+     <div class="flex items-center gap-2">
+      <button class="px-4 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF]" id="tabPatients">
+       Patients
+      </button>
+      <button class="px-4 py-2 rounded-md bg-gray-100 text-gray-700" id="tabDoctors">
+       Doctors
+      </button>
+      <span class="text-sm text-gray-500">
+       Switch views to focus on role-specific features.
+      </span>
+     </div>
+    </div>
+   </section>
+   <!-- Feature Showcase -->
+   <section class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+     <!-- Patient Features -->
+     <div class="space-y-6" id="patientFeatures">
+      <h2 class="text-2xl font-semibold text-[#1f2937]">
+       For Our Patients
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+       <div class="card rounded-lg border border-gray-200 p-5 hover:shadow-sm">
+        <div class="flex items-center gap-3">
+         <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#0000FF]/10 text-[#0000FF]">
+          <i class="fa-solid fa-brain">
+          </i>
+         </span>
+         <h3 class="text-lg font-medium">
+          AI Symptom Checker
+         </h3>
+        </div>
+        <p class="mt-3 text-gray-700">
+         Enter your symptoms into our intuitive, multi-step checker to receive an AI-generated list of potential conditions and their likelihood.
+        </p>
+       </div>
+       <div class="card rounded-lg border border-gray-200 p-5 hover:shadow-sm">
+        <div class="flex items-center gap-3">
+         <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#008080]/10 text-[#008080]">
+          <i class="fa-solid fa-upload">
+          </i>
+         </span>
+         <h3 class="text-lg font-medium">
+          Secure Document Upload
+         </h3>
+        </div>
+        <p class="mt-3 text-gray-700">
+         Easily upload medical reports, images, and other health documents to provide more context for a more accurate preliminary analysis.
+        </p>
+       </div>
+       <div class="card rounded-lg border border-gray-200 p-5 hover:shadow-sm">
+        <div class="flex items-center gap-3">
+         <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#0000FF]/10 text-[#0000FF]">
+          <i class="fa-solid fa-clock-rotate-left">
+          </i>
+         </span>
+         <h3 class="text-lg font-medium">
+          Personal Diagnosis History
+         </h3>
+        </div>
+        <p class="mt-3 text-gray-700">
+         Keep a secure, accessible record of all your past diagnosis requests and doctor feedback in your personal dashboard.
+        </p>
+       </div>
+      </div>
+     </div>
+     <!-- Doctor Features -->
+     <div class="space-y-6 mt-10" id="doctorFeatures">
+      <h2 class="text-2xl font-semibold text-[#1f2937]">
+       For Healthcare Professionals
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+       <div class="card rounded-lg border border-gray-200 p-5 hover:shadow-sm">
+        <div class="flex items-center gap-3">
+         <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#008080]/10 text-[#008080]">
+          <i class="fa-solid fa-list-check">
+          </i>
+         </span>
+         <h3 class="text-lg font-medium">
+          Efficient Case Management
+         </h3>
+        </div>
+        <p class="mt-3 text-gray-700">
+         Access a streamlined dashboard with a queue of patient-submitted cases, allowing you to prioritize and manage your workload effectively.
+        </p>
+       </div>
+       <div class="card rounded-lg border border-gray-200 p-5 hover:shadow-sm">
+        <div class="flex items-center gap-3">
+         <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#0000FF]/10 text-[#0000FF]">
+          <i class="fa-solid fa-robot">
+          </i>
+         </span>
+         <h3 class="text-lg font-medium">
+          AI-Assisted Review
+         </h3>
+        </div>
+        <p class="mt-3 text-gray-700">
+         Review comprehensive case details, including patient data and the AI’s preliminary analysis, to make faster, more informed clinical judgments.
+        </p>
+       </div>
+       <div class="card rounded-lg border border-gray-200 p-5 hover:shadow-sm">
+        <div class="flex items-center gap-3">
+         <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#008080]/10 text-[#008080]">
+          <i class="fa-solid fa-clipboard-check">
+          </i>
+         </span>
+         <h3 class="text-lg font-medium">
+          Validate and Annotate
+         </h3>
+        </div>
+        <p class="mt-3 text-gray-700">
+         Easily confirm or reject AI suggestions and add your professional notes to provide clear, validated feedback and guidance to your patients.
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <!-- Usage Insights (ApexCharts) -->
+   <section class="bg-white border-t border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+     <div class="flex items-center justify-between">
+      <h3 class="text-xl font-semibold text-[#1f2937]">
+       Insights: Weekly Diagnosis Requests
+      </h3>
+      <span class="text-sm text-gray-500">
+       Interactive chart with tooltips &amp; zoom
+      </span>
+     </div>
+     <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="md:col-span-2">
+       <div class="w-full bg-gray-50 rounded-lg border border-gray-200" id="featureChart">
+       </div>
+      </div>
+      <div class="card rounded-lg border border-gray-200 p-5">
+       <h4 class="font-medium">
+        Highlights
+       </h4>
+       <ul class="mt-3 space-y-2 text-gray-700">
+        <li>
+         <i class="fa-solid fa-circle text-[#0000FF] mr-2">
+         </i>
+         Peak activity mid-week.
+        </li>
+        <li>
+         <i class="fa-solid fa-circle text-[#008080] mr-2">
+         </i>
+         Steady growth over 4 weeks.
+        </li>
+        <li>
+         <i class="fa-solid fa-circle text-[#f59e0b] mr-2">
+         </i>
+         Weekend drop observed.
+        </li>
+       </ul>
+       <button class="mt-4 px-3 py-2 rounded-md bg-[#0000FF] text-white hover:bg-[#0000FF]/80" id="chartInfoBtn">
+        Chart Info
+       </button>
+      </div>
+     </div>
+    </div>
+   </section>
+   <!-- Sample Data Table -->
+   <section class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+     <div class="flex items-center justify-between">
+      <h3 class="text-xl font-semibold text-[#1f2937]">
+       Recent AI-Assisted Events
+      </h3>
+      <div class="flex items-center gap-2">
+       <input class="form-input px-3 py-2 rounded-md border border-gray-300" id="tableFilter" placeholder="Filter by user or feature..." type="text">
+        <button class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200" id="clearFilter">
+         Clear
+        </button>
+       </input>
+      </div>
+     </div>
+     <div class="mt-4 overflow-x-auto bg-white rounded-lg border border-gray-200">
+      <table class="min-w-full text-left" id="eventsTable">
+       <thead class="table-header">
+        <tr>
+         <th class="px-4 py-2 cursor-pointer" data-sort="date">
+          Date
+          <i class="fa-solid fa-sort ms-1">
+          </i>
+         </th>
+         <th class="px-4 py-2 cursor-pointer" data-sort="user">
+          User
+          <i class="fa-solid fa-sort ms-1">
+          </i>
+         </th>
+         <th class="px-4 py-2 cursor-pointer" data-sort="role">
+          Role
+          <i class="fa-solid fa-sort ms-1">
+          </i>
+         </th>
+         <th class="px-4 py-2 cursor-pointer" data-sort="feature">
+          Feature
+          <i class="fa-solid fa-sort ms-1">
+          </i>
+         </th>
+         <th class="px-4 py-2 cursor-pointer" data-sort="outcome">
+          Outcome
+          <i class="fa-solid fa-sort ms-1">
+          </i>
+         </th>
+         <th class="px-4 py-2 cursor-pointer" data-sort="confidence">
+          Confidence
+          <i class="fa-solid fa-sort ms-1">
+          </i>
+         </th>
+         <th class="px-4 py-2">
+          Action
+         </th>
+        </tr>
+       </thead>
+       <tbody class="table-striped" id="eventsBody">
+        <!-- Rows injected by JS -->
+       </tbody>
+      </table>
+      <div class="flex items-center justify-between px-4 py-3 border-t">
+       <span class="text-sm text-gray-600" id="paginationInfo">
+        Page 1 of 1 • Showing 6 of 6
+       </span>
+       <div class="flex items-center gap-2">
+        <button class="pagination-btn px-3 py-1 rounded-md border">
+         Prev
+        </button>
+        <button class="pagination-btn-active px-3 py-1 rounded-md border">
+         1
+        </button>
+        <button class="pagination-btn px-3 py-1 rounded-md border">
+         Next
+        </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <!-- CTA Section -->
+   <section class="bg-[#008080]/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center">
+     <h2 class="text-2xl font-semibold text-[#1f2937]">
+      Ready to Experience the Future of Healthcare?
+     </h2>
+     <div class="mt-6 flex items-center justify-center gap-4">
+      <a class="btn-primary px-5 py-3 rounded-md" href="./registration_page.html?role=patient">
+       Join as a Patient
+      </a>
+      <a class="btn-secondary px-5 py-3 rounded-md" href="./registration_page.html?role=doctor">
+       Join as a Doctor
+      </a>
+     </div>
+    </div>
+   </section>
+  </main>
+  <!-- Notification Panel (slides in from right) -->
+  <div class="notification-panel hidden fixed top-16 right-0 w-full sm:w-80 h-[calc(100vh-64px)] bg-white border-l border-gray-200 shadow-xl p-4 overflow-y-auto" id="notificationPanel">
+   <div class="flex items-center justify-between">
+    <h4 class="font-semibold">
+     Notifications
+    </h4>
+    <button class="px-2 py-1 rounded-md bg-gray-100 hover:bg-gray-200" id="notifyClose">
+     <i class="fa-solid fa-xmark">
+     </i>
+    </button>
+   </div>
+   <ul class="mt-4 space-y-3">
+    <li class="flex items-start gap-3">
+     <span class="inline-flex h-6 w-6 items-center justify-center rounded bg-[#0000FF]/10 text-[#0000FF]">
+      <i class="fa-solid fa-info">
+      </i>
+     </span>
+     <div>
+      <p class="font-medium">
+       New feature update
+      </p>
+      <p class="text-sm text-gray-600">
+       AI symptom checker refined for common cold differential.
+      </p>
+     </div>
+    </li>
+    <li class="flex items-start gap-3">
+     <span class="inline-flex h-6 w-6 items-center justify-center rounded bg-[#16a34a]/10 text-[#16a34a]">
+      <i class="fa-solid fa-check">
+      </i>
+     </span>
+     <div>
+      <p class="font-medium">
+       Upload succeeded
+      </p>
+      <p class="text-sm text-gray-600">
+       Your report has been securely stored.
+      </p>
+     </div>
+    </li>
+    <li class="flex items-start gap-3">
+     <span class="inline-flex h-6 w-6 items-center justify-center rounded bg-[#f59e0b]/10 text-[#f59e0b]">
+      <i class="fa-solid fa-triangle-exclamation">
+      </i>
+     </span>
+     <div>
+      <p class="font-medium">
+       Scheduled maintenance
+      </p>
+      <p class="text-sm text-gray-600">
+       Service windows: Sat 10:00–12:00 UTC.
+      </p>
+     </div>
+    </li>
+   </ul>
+  </div>
+  <!-- Help Assistant: Floating bottom-right -->
+  <div class="fixed bottom-4 right-4 z-40">
+   <button class="px-4 py-3 rounded-full bg-[#0000FF] text-white shadow hover:bg-[#0000FF]/90" id="helpOpen">
+    <i class="fa-solid fa-circle-question">
+    </i>
+   </button>
+   <div class="help-widget hidden mt-3 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4" id="helpWidget">
+    <div class="flex items-center justify-between">
+     <h4 class="font-semibold">
+      Help Assistant
+     </h4>
+     <button class="px-2 py-1 rounded-md bg-gray-100 hover:bg-gray-200" id="helpClose">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <p class="mt-3 text-gray-700">
+     Need guidance? Explore our features or start with registration.
+    </p>
+    <div class="mt-4 space-y-2">
+     <a class="block px-3 py-2 rounded-md bg-[#008080]/10 text-[#008080] hover:bg-[#008080]/20" href="./patient_dashboard.html">
+      <i class="fa-solid fa-user">
+      </i>
+      Patient Dashboard
+     </a>
+     <a class="block px-3 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF] hover:bg-[#0000FF]/20" href="./doctor_dashboard.html">
+      <i class="fa-solid fa-user-doctor">
+      </i>
+      Doctor Dashboard
+     </a>
+     <a class="block px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200" href="./new_diagnosis_page.html">
+      <i class="fa-solid fa-notes-medical">
+      </i>
+      New Diagnosis
+     </a>
+    </div>
+   </div>
+  </div>
+  <!-- Footer (common component) -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      © 2025 AI-Health Corp.
+     </span>
+    </div>
+    <div class="flex items-center gap-6">
+     <a class="flex items-center gap-2 hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      <i class="fa-solid fa-scale-balanced text-[#008080]">
+      </i>
+      <span>
+       Terms
+      </span>
+     </a>
+     <a class="flex items-center gap-2 hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      <i class="fa-solid fa-shield-halved text-[#008080]">
+      </i>
+      <span>
+       Privacy
+      </span>
+     </a>
+    </div>
+   </div>
+  </footer>
+  <!-- Scripts: Interactivity -->
+  <script>
+   // Accessibility Mode Toggle
+const accessToggle = document.getElementById('accessToggle');
+accessToggle.addEventListener('change', () => {
+    document.body.classList.toggle('accessibility-mode', accessToggle.checked);
+});
+
+// Voice Narration
+const narrateBtn = document.getElementById('narrateBtn');
+narrateBtn.addEventListener('click', () => {
+    const text = 'Intelligent Healthcare, Simplified. Discover how our AI-powered platform assists both patients and doctors with smart diagnostics, secure data management, and streamlined workflows.';
+    if ('speechSynthesis' in window) {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1.0;
+        utter.pitch = 1.0;
+        utter.lang = 'en-US';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+    } else {
+        Swal.fire({
+            icon: 'info',
+            title: 'Voice Narration Unavailable',
+            text: 'Your browser does not support speech synthesis.'
+        });
+    }
+});
+
+// SweetAlert Learn More CTA
+document.getElementById('learnMoreCTA').addEventListener('click', () => {
+    Swal.fire({
+        icon: 'info',
+        title: 'Feature Overview',
+        html: '<div class="text-left">\n          <p>Explore AI Symptom Checker, Secure Uploads, Case Management, and more.</p>\n          <ul class="mt-3 list-disc pl-5"><li>Friendly & Accessible UI</li><li>Color-coded actions</li><li>Role-based views</li></ul>\n        </div>'
+    });
+});
+
+// Notification Panel Toggle
+const notifyToggle = document.getElementById('notifyToggle');
+const notifyPanel = document.getElementById('notificationPanel');
+const notifyClose = document.getElementById('notifyClose');
+notifyToggle.addEventListener('click', () => {
+    notifyPanel.classList.remove('hidden');
+    notifyPanel.classList.add('visible');
+});
+notifyClose.addEventListener('click', () => {
+    notifyPanel.classList.remove('visible');
+    notifyPanel.classList.add('hidden');
+});
+
+// Help Assistant
+const helpOpen = document.getElementById('helpOpen');
+const helpWidget = document.getElementById('helpWidget');
+const helpClose = document.getElementById('helpClose');
+helpOpen.addEventListener('click', () => {
+    helpWidget.classList.remove('hidden');
+    helpWidget.classList.add('visible');
+});
+helpClose.addEventListener('click', () => {
+    helpWidget.classList.remove('visible');
+    helpWidget.classList.add('hidden');
+});
+
+// Site Search demo
+const siteSearch = document.getElementById('siteSearch');
+siteSearch.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const q = siteSearch.value.trim();
+        if (!q) return;
+        Swal.fire({
+            icon: 'info',
+            title: 'Search',
+            text: 'Searching for: ' + q
+        });
+    }
+});
+
+// Tabs: Patients / Doctors
+const tabPatients = document.getElementById('tabPatients');
+const tabDoctors = document.getElementById('tabDoctors');
+const patientFeatures = document.getElementById('patientFeatures');
+const doctorFeatures = document.getElementById('doctorFeatures');
+
+function setTab(active) {
+    if (active === 'patients') {
+        tabPatients.className = 'px-4 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF]';
+        tabDoctors.className = 'px-4 py-2 rounded-md bg-gray-100 text-gray-700';
+        patientFeatures.classList.remove('opacity-50');
+        doctorFeatures.classList.add('opacity-50');
+    } else {
+        tabDoctors.className = 'px-4 py-2 rounded-md bg-[#0000FF]/10 text-[#0000FF]';
+        tabPatients.className = 'px-4 py-2 rounded-md bg-gray-100 text-gray-700';
+        doctorFeatures.classList.remove('opacity-50');
+        patientFeatures.classList.add('opacity-50');
+    }
+}
+tabPatients.addEventListener('click', () => setTab('patients'));
+tabDoctors.addEventListener('click', () => setTab('doctors'));
+setTab('patients');
+
+// ApexCharts: Weekly Diagnosis Requests
+const chartOptions = {
+    chart: {
+        type: 'line',
+        height: 300,
+        toolbar: {
+            show: true
+        },
+        zoom: {
+            enabled: true
+        }
+    },
+    series: [{
+        name: 'Requests',
+        data: [24, 28, 35, 40, 38, 22, 18]
+    }],
+    xaxis: {
+        categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    },
+    colors: ['#0000FF'],
+    stroke: {
+        curve: 'smooth',
+        width: 3
+    },
+    markers: {
+        size: 4
+    },
+    tooltip: {
+        shared: true
+    },
+    responsive: [{
+        breakpoint: 768,
+        options: {
+            chart: {
+                height: 260
+            }
+        }
+    }]
+};
+const chart = new ApexCharts(document.querySelector('#featureChart'), chartOptions);
+chart.render();
+
+document.getElementById('chartInfoBtn').addEventListener('click', () => {
+    Swal.fire({
+        icon: 'info',
+        title: 'Chart Details',
+        text: 'Shows AI diagnosis request trends over the week. Use toolbar to zoom or download.'
+    });
+});
+
+// Sample Data Table with sorting & filtering
+const data = [{
+    date: '2025-10-01',
+    user: 'Alice Doe',
+    role: 'Patient',
+    feature: 'Symptom Checker',
+    outcome: 'Preliminary: Migraine',
+    confidence: 0.82
+}, {
+    date: '2025-10-02',
+    user: 'Dr. Smith',
+    role: 'Doctor',
+    feature: 'AI-Assisted Review',
+    outcome: 'Confirmed: Viral URI',
+    confidence: 0.91
+}, {
+    date: '2025-10-03',
+    user: 'Bob Chan',
+    role: 'Patient',
+    feature: 'Upload',
+    outcome: 'Docs Received',
+    confidence: 0.00
+}, {
+    date: '2025-10-04',
+    user: 'Dr. Lee',
+    role: 'Doctor',
+    feature: 'Annotate',
+    outcome: 'Rejected Suggestion',
+    confidence: 0.25
+}, {
+    date: '2025-10-05',
+    user: 'Carla Sun',
+    role: 'Patient',
+    feature: 'History',
+    outcome: 'Viewed Past Cases',
+    confidence: 0.00
+}, {
+    date: '2025-10-06',
+    user: 'Dr. Patel',
+    role: 'Doctor',
+    feature: 'Case Management',
+    outcome: 'Prioritized Case',
+    confidence: 0.00
+}];
+let sortKey = null;
+let sortAsc = true;
+let filterText = '';
+
+function formatConfidence(c) {
+    return (c * 100).toFixed(0) + '%';
+}
+
+function renderTable() {
+    const tbody = document.getElementById('eventsBody');
+    tbody.innerHTML = '';
+    let rows = data.slice();
+    if (filterText) {
+        const q = filterText.toLowerCase();
+        rows = rows.filter(r => r.user.toLowerCase().includes(q) || r.feature.toLowerCase().includes(q));
+    }
+    if (sortKey) {
+        rows.sort((a, b) => {
+            let av = a[sortKey];
+            let bv = b[sortKey];
+            if (sortKey === 'confidence') {
+                return sortAsc ? av - bv : bv - av;
+            }
+            return sortAsc ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+        });
+    }
+    rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'table-row';
+        tr.innerHTML = `
+          <td class="px-4 py-2">${r.date}</td>
+          <td class="px-4 py-2">${r.user}</td>
+          <td class="px-4 py-2">${r.role}</td>
+          <td class="px-4 py-2">${r.feature}</td>
+          <td class="px-4 py-2">${r.outcome}</td>
+          <td class="px-4 py-2">${formatConfidence(r.confidence)}</td>
+          <td class="px-4 py-2">
+            <a href="./case_details_page.html" class="px-3 py-1 rounded-md bg-[#0000FF]/10 text-[#0000FF] hover:bg-[#0000FF]/20">View Details</a>
+          </td>`;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('paginationInfo').textContent = `Page 1 of 1 • Showing ${rows.length} of ${data.length}`;
+}
+
+function setSort(k) {
+    if (sortKey === k) {
+        sortAsc = !sortAsc;
+    } else {
+        sortKey = k;
+        sortAsc = true;
+    }
+    renderTable();
+}
+
+document.querySelectorAll('#eventsTable thead th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => setSort(th.getAttribute('data-sort')));
+});
+document.getElementById('tableFilter').addEventListener('input', (e) => {
+    filterText = e.target.value;
+    renderTable();
+});
+document.getElementById('clearFilter').addEventListener('click', () => {
+    filterText = '';
+    document.getElementById('tableFilter').value = '';
+    renderTable();
+});
+renderTable();
+  </script>
+ </body>
+</html>

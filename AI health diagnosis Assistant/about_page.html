@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   About - AI Health Assistant
+  </title>
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <!-- Font Awesome 6 -->
+  <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pIVpG8G7C1O0zY0S2T1vQb7QnKXyA3oS7P0mGk6S3U5H8m9JY0x4g0U0pjk2vY1fF6NnK8JH6k3r3pCk5e1w2w==" referrerpolicy="no-referrer" rel="stylesheet">
+   <!-- SweetAlert2 -->
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+   </script>
+   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet"/>
+   <!-- ApexCharts -->
+   <script src="https://cdn.jsdelivr.net/npm/apexcharts">
+   </script>
+   <!-- Global Theme CSS -->
+   <link href="style.css" rel="stylesheet"/>
+   <!-- Page-specific CSS (also provide as about_page.css in your build) -->
+   <link href="about_page.css" rel="stylesheet"/>
+   <style>
+    /* about_page.css (Page-specific styles; move to an external about_page.css file in production) */
+    body { font-family: 'Poppins', sans-serif; }
+    /* Subtle hover effect for team cards */
+    .team-card { transition: transform 200ms ease, box-shadow 200ms ease; }
+    .team-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+
+    /* Accessibility mode: increase base font size and contrast */
+    body.accessibility-mode { font-size: 18px; line-height: 1.75; }
+    body.accessibility-mode a { text-decoration: underline; }
+    body.accessibility-mode .card { border: 1px solid #d1d5db; }
+
+    /* Overlay loader */
+    #page-loader { backdrop-filter: blur(4px); }
+   </style>
+  </link>
+ 
+<!-- CSS Loader Script -->
+<script src="./css_loader.js"></script>
+</head>
+ <body class="bg-gray-50 text-gray-800">
+  <!-- Header (Common Public Info Header) -->
+  <header class="fixed top-0 left-0 right-0 z-50 w-full bg-[#0000FF] text-white shadow-md" id="app-header">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+     <a class="flex items-center gap-2" href="./home_page.html">
+      <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center">
+       <i class="fa-solid fa-heart-pulse">
+       </i>
+      </span>
+      <span class="font-semibold tracking-wide">
+       AI Health Assistant
+      </span>
+     </a>
+     <div class="hidden md:flex items-center gap-6">
+      <a class="hover:underline hover:text-[#C7D2FE]" href="./features_page.html">
+       Features
+      </a>
+      <a class="hover:underline hover:text-[#C7D2FE]" href="./about_page.html">
+       About
+      </a>
+      <div class="relative">
+       <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/70">
+       </i>
+       <input class="pl-9 pr-3 py-2 rounded-md bg-white/20 placeholder-white/70 focus:bg:white/30 focus:outline-none" placeholder="Search site..." type="search"/>
+      </div>
+      <a class="px-3 py-2 rounded-md bg-white/20 hover:bg-white/30" href="./login_page.html">
+       Login
+      </a>
+      <a class="px-3 py-2 rounded-md bg-[#008080] hover:bg-[#008080]/80" href="./registration_page.html">
+       Sign Up
+      </a>
+     </div>
+     <button class="md:hidden inline-flex items-center gap-2 px-3 py-2 rounded-md bg:white/20" id="sidebarToggle">
+      Menu
+     </button>
+    </div>
+   </div>
+   <script>
+    (function() {
+    const btn = document.getElementById('sidebarToggle');
+    const sb = document.getElementById('app-sidebar');
+    if (btn && sb) {
+        btn.addEventListener('click', () => sb.classList.toggle('hidden'));
+    }
+})();
+   </script>
+  </header>
+  <!-- Sidebar (Common Public Info Sidebar) - included for public About page -->
+  <aside class="mt-16 md:mt-16 fixed md:static top-16 left-0 z-40 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 overflow-y-auto hidden md:block" id="app-sidebar">
+   <nav class="p-4 space-y-2 text-gray-700">
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF] transition" href="./home_page.html">
+     <i class="fa-solid fa-house text-[#008080]">
+     </i>
+     <span>
+      Home
+     </span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF] transition" href="./features_page.html">
+     <i class="fa-solid fa-sparkles text-[#008080]">
+     </i>
+     <span>
+      Features
+     </span>
+    </a>
+    <a aria-current="page" class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#0000FF]/10 hover:text-[#0000FF] transition bg-[#0000FF]/10 text-[#0000FF] font-medium" href="./about_page.html">
+     <i class="fa-solid fa-circle-info text-[#008080]">
+     </i>
+     <span>
+      About
+     </span>
+    </a>
+    <details class="group">
+     <summary class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer hover:bg-[#0000FF]/10 hover:text-[#0000FF]">
+      <i class="fa-solid fa-file-lines text-[#008080]">
+      </i>
+      <span>
+       Learn More
+      </span>
+      <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 group-open:rotate-180 transition">
+      </i>
+     </summary>
+     <div class="pl-8 mt-2 space-y-2">
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./terms_of_service_page.html">
+       Terms of Service
+      </a>
+      <a class="block px-3 py-1 rounded-md hover:bg-gray-100" href="./privacy_policy_page.html">
+       Privacy Policy
+      </a>
+     </div>
+    </details>
+    <div class="mt-4 border-t pt-4">
+     <p class="text-xs text-gray-500">
+      Disclaimer: For informational purposes only.
+     </p>
+    </div>
+   </nav>
+  </aside>
+  <!-- Main Content -->
+  <main class="pt-16 md:ml-64">
+   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb / Page Title -->
+    <div class="flex items-center justify-between mb-6">
+     <h1 class="text-2xl sm:text-3xl font-semibold text-gray-900">
+      About Our Project
+     </h1>
+     <button class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700" id="subscribeBtn">
+      <i class="fa-solid fa-bell">
+      </i>
+      <span>
+       Subscribe to updates
+      </span>
+     </button>
+    </div>
+    <!-- Mission & Vision Section -->
+    <section aria-labelledby="mission-heading" class="mb-10">
+     <div class="bg-white rounded-lg shadow card p-6">
+      <div class="flex items-start justify-between">
+       <div>
+        <h2 class="text-xl sm:text-2xl font-semibold text-gray-900 flex items-center gap-3" id="mission-heading">
+         Our Mission
+         <button class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#0000FF]/10 text-[#0000FF] hover:bg-[#0000FF]/20" id="ttsMission" title="Listen to this section">
+          <i class="fa-solid fa-volume-high">
+          </i>
+         </button>
+        </h2>
+        <p class="mt-3 text-gray-700 leading-relaxed">
+         To make healthcare more accessible, proactive, and personalized by combining trusted medical expertise with safe, assistive AI. We strive to empower patients and clinicians with timely insights, simple tools, and secure data practices.
+        </p>
+       </div>
+      </div>
+      <div class="mt-6">
+       <h3 class="text-lg font-semibold text-gray-900">
+        Our Vision
+       </h3>
+       <p class="mt-2 text-gray-700 leading-relaxed">
+        A world where everyone can confidently understand their health, access guidance early, and collaborate with their care team seamlessly—no matter where they live.
+       </p>
+      </div>
+     </div>
+    </section>
+    <!-- Impact Chart Section (ApexCharts) -->
+    <section class="mb-10">
+     <div class="bg-white rounded-lg shadow card p-6">
+      <div class="flex items-center justify-between mb-4">
+       <h3 class="text-lg font-semibold text-gray-900">
+        Our Impact
+       </h3>
+       <div class="text-sm text-gray-500">
+        Monthly user engagement (mock data)
+       </div>
+      </div>
+      <div class="w-full" id="impactChart" style="min-height: 260px;">
+      </div>
+     </div>
+    </section>
+    <!-- User Views (Tabs) -->
+    <section class="mb-10">
+     <div class="bg-white rounded-lg shadow card p-6">
+      <div class="flex flex-wrap items-center gap-2 border-b pb-2">
+       <button class="tab-btn px-4 py-2 rounded-md bg-blue-50 text-blue-700" data-tab="patients">
+        Patients
+       </button>
+       <button class="tab-btn px-4 py-2 rounded-md hover:bg-gray-100" data-tab="doctors">
+        Doctors
+       </button>
+       <button class="tab-btn px-4 py-2 rounded-md hover:bg-gray-100" data-tab="stakeholders">
+        Stakeholders
+       </button>
+      </div>
+      <div class="mt-4">
+       <div class="tab-panel" id="tab-patients">
+        <p class="text-gray-700">
+         Patients benefit from symptom guidance, appointment prep checklists, and an easy-to-use portal that keeps health information organized and private.
+        </p>
+       </div>
+       <div class="tab-panel hidden" id="tab-doctors">
+        <p class="text-gray-700">
+         Doctors gain decision support, structured notes, and streamlined communication—reducing administrative burden while improving patient outcomes.
+        </p>
+       </div>
+       <div class="tab-panel hidden" id="tab-stakeholders">
+        <p class="text-gray-700">
+         Stakeholders see transparent metrics, interoperability, and compliance with privacy-first design to ensure responsible innovation.
+        </p>
+       </div>
+      </div>
+     </div>
+    </section>
+    <!-- Team Section -->
+    <section aria-labelledby="team-heading" class="mb-10">
+     <div class="bg-white rounded-lg shadow card p-6">
+      <h2 class="text-xl sm:text-2xl font-semibold text-gray-900 mb-6" id="team-heading">
+       Meet the Team
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+       <!-- Team Member Card 1 -->
+       <article class="team-card bg-gray-50 rounded-lg p-5">
+        <div class="flex items-center gap-4">
+         <img alt="Profile of Dr. Aisha Patel" class="w-20 h-20 rounded-full object-cover" onerror="this.onerror=null;this.src='https://picsum.photos/id/237/120/120';" src="https://picsum.photos/seed/team1/120/120"/>
+         <div>
+          <h3 class="font-semibold text-gray-900">
+           Dr. Aisha Patel
+          </h3>
+          <p class="text-sm text-gray-600">
+           Chief Medical Officer
+          </p>
+         </div>
+        </div>
+        <p class="mt-3 text-gray-700 text-sm leading-relaxed">
+         Board-certified internist focused on preventive care and clinical safety in AI-assisted workflows.
+        </p>
+       </article>
+       <!-- Team Member Card 2 -->
+       <article class="team-card bg-gray-50 rounded-lg p-5">
+        <div class="flex items-center gap-4">
+         <img alt="Profile of Miguel Santos" class="w-20 h-20 rounded-full object-cover" onerror="this.onerror=null;this.src='https://picsum.photos/id/238/120/120';" src="https://picsum.photos/seed/team2/120/120"/>
+         <div>
+          <h3 class="font-semibold text-gray-900">
+           Miguel Santos
+          </h3>
+          <p class="text-sm text-gray-600">
+           Lead ML Engineer
+          </p>
+         </div>
+        </div>
+        <p class="mt-3 text-gray-700 text-sm leading-relaxed">
+         Designs robust, privacy-preserving models for triage, insights, and personalized education.
+        </p>
+       </article>
+       <!-- Team Member Card 3 -->
+       <article class="team-card bg-gray-50 rounded-lg p-5">
+        <div class="flex items-center gap-4">
+         <img alt="Profile of Sarah Lin" class="w-20 h-20 rounded-full object-cover" onerror="this.onerror=null;this.src='https://picsum.photos/id/239/120/120';" src="https://picsum.photos/seed/team3/120/120"/>
+         <div>
+          <h3 class="font-semibold text-gray-900">
+           Sarah Lin
+          </h3>
+          <p class="text-sm text-gray-600">
+           UX Researcher
+          </p>
+         </div>
+        </div>
+        <p class="mt-3 text-gray-700 text-sm leading-relaxed">
+         Leads accessibility and usability studies to ensure inclusive, friendly experiences.
+        </p>
+       </article>
+       <!-- Team Member Card 4 -->
+       <article class="team-card bg-gray-50 rounded-lg p-5">
+        <div class="flex items-center gap-4">
+         <img alt="Profile of Priya Nair" class="w-20 h-20 rounded-full object-cover" onerror="this.onerror=null;this.src='https://picsum.photos/id/240/120/120';" src="https://picsum.photos/seed/team4/120/120"/>
+         <div>
+          <h3 class="font-semibold text-gray-900">
+           Priya Nair
+          </h3>
+          <p class="text-sm text-gray-600">
+           Product Manager
+          </p>
+         </div>
+        </div>
+        <p class="mt-3 text-gray-700 text-sm leading-relaxed">
+         Connects clinical needs and user feedback to a practical product roadmap.
+        </p>
+       </article>
+       <!-- Team Member Card 5 -->
+       <article class="team-card bg-gray-50 rounded-lg p-5">
+        <div class="flex items-center gap-4">
+         <img alt="Profile of Jason Kim" class="w-20 h-20 rounded-full object-cover" onerror="this.onerror=null;this.src='https://picsum.photos/id/241/120/120';" src="https://picsum.photos/seed/team5/120/120"/>
+         <div>
+          <h3 class="font-semibold text-gray-900">
+           Jason Kim
+          </h3>
+          <p class="text-sm text-gray-600">
+           Security Engineer
+          </p>
+         </div>
+        </div>
+        <p class="mt-3 text-gray-700 text-sm leading-relaxed">
+         Implements end-to-end encryption, threat modeling, and compliance controls.
+        </p>
+       </article>
+       <!-- Team Member Card 6 -->
+       <article class="team-card bg-gray-50 rounded-lg p-5">
+        <div class="flex items-center gap-4">
+         <img alt="Profile of Emily Zhao" class="w-20 h-20 rounded-full object-cover" onerror="this.onerror=null;this.src='https://picsum.photos/id/242/120/120';" src="https://picsum.photos/seed/team6/120/120"/>
+         <div>
+          <h3 class="font-semibold text-gray-900">
+           Emily Zhao
+          </h3>
+          <p class="text-sm text-gray-600">
+           Frontend Engineer
+          </p>
+         </div>
+        </div>
+        <p class="mt-3 text-gray-700 text-sm leading-relaxed">
+         Builds responsive, accessible UI components for web and mobile.
+        </p>
+       </article>
+      </div>
+     </div>
+    </section>
+    <!-- Technology Stack Table (with filter/sort) -->
+    <section class="mb-10">
+     <div class="bg-white rounded-lg shadow card p-6">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">
+       <div>
+        <h3 class="text-lg font-semibold text-gray-900">
+         Technology Stack
+        </h3>
+        <p class="text-sm text-gray-500">
+         Sample data for illustration
+        </p>
+       </div>
+       <div class="flex items-center gap-3">
+        <div>
+         <label class="text-sm text-gray-600" for="techSearch">
+          Filter
+         </label>
+         <input class="block w-56 md:w-64 mt-1 px-3 py-2 border border-gray-300 rounded-md" id="techSearch" placeholder="Search..." type="text"/>
+        </div>
+        <div>
+         <label class="text-sm text-gray-600" for="techCategory">
+          Category
+         </label>
+         <select class="block w-44 mt-1 px-3 py-2 border border-gray-300 rounded-md" id="techCategory">
+          <option value="">
+           All
+          </option>
+          <option>
+           Framework
+          </option>
+          <option>
+           Library
+          </option>
+          <option>
+           Service
+          </option>
+         </select>
+        </div>
+       </div>
+      </div>
+      <div class="overflow-x-auto">
+       <table class="min-w-full text-sm">
+        <thead class="bg-gray-100">
+         <tr>
+          <th class="px-4 py-2 text-left cursor-pointer" data-sort="name">
+           Name
+           <i class="fa-solid fa-sort text-gray-400">
+           </i>
+          </th>
+          <th class="px-4 py-2 text-left cursor-pointer" data-sort="category">
+           Category
+           <i class="fa-solid fa-sort text-gray-400">
+           </i>
+          </th>
+          <th class="px-4 py-2 text-left cursor-pointer" data-sort="version">
+           Version
+           <i class="fa-solid fa-sort text-gray-400">
+           </i>
+          </th>
+          <th class="px-4 py-2 text-left cursor-pointer" data-sort="updated">
+           Last Updated
+           <i class="fa-solid fa-sort text-gray-400">
+           </i>
+          </th>
+          <th class="px-4 py-2 text-left">
+           Actions
+          </th>
+         </tr>
+        </thead>
+        <tbody class="divide-y" id="techBody">
+         <!-- Rows injected by JS -->
+        </tbody>
+       </table>
+      </div>
+      <div class="mt-3 text-sm text-gray-600" id="paginationInfo">
+       Showing 0 of 0
+      </div>
+     </div>
+    </section>
+    <!-- CTA Section -->
+    <section class="mb-16">
+     <div class="bg-gradient-to-r from-blue-50 to-teal-50 rounded-lg p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>
+       <h2 class="text-xl sm:text-2xl font-semibold text-gray-900">
+        Ready to Get Started?
+       </h2>
+       <p class="text-gray-700 mt-1">
+        Create a free account and explore the platform.
+       </p>
+      </div>
+      <a class="btn-primary px-5 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-700" href="./registration_page.html">
+       Create an Account
+      </a>
+     </div>
+    </section>
+   </section>
+  </main>
+  <!-- Footer (Common Public Info Footer) -->
+  <footer class="bg-gray-100 text-gray-700 border-t border-gray-200">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+     <span class="inline-flex h-6 w-6 rounded bg-[#0000FF]/10 items-center justify-center text-[#0000FF]">
+      <i class="fa-solid fa-heart-pulse">
+      </i>
+     </span>
+     <span class="text-sm">
+      © 2025 AI-Health Corp.
+     </span>
+    </div>
+    <div class="flex items-center gap-6">
+     <a class="flex items-center gap-2 hover:text-[#0000FF]" href="./terms_of_service_page.html">
+      <i class="fa-solid fa-scale-balanced text-[#008080]">
+      </i>
+      <span>
+       Terms
+      </span>
+     </a>
+     <a class="flex items-center gap-2 hover:text-[#0000FF]" href="./privacy_policy_page.html">
+      <i class="fa-solid fa-shield-halved text-[#008080]">
+      </i>
+      <span>
+       Privacy
+      </span>
+     </a>
+    </div>
+   </div>
+  </footer>
+  <!-- Floating Accessibility Toggle -->
+  <button class="fixed bottom-24 left-4 z-50 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gray-900 text-white shadow-lg hover:bg-gray-800" id="a11yToggle" title="Toggle accessibility mode">
+   <i class="fa-solid fa-universal-access">
+   </i>
+   <span class="hidden sm:inline">
+    Accessibility
+   </span>
+  </button>
+  <!-- Floating Notifications Button -->
+  <button class="fixed bottom-24 right-4 z-50 inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700" id="notifToggle" title="Notifications">
+   <i class="fa-solid fa-bell">
+   </i>
+  </button>
+  <!-- Notification Panel -->
+  <aside class="fixed top-16 right-0 z-50 w-80 max-w-[90vw] h-[calc(100vh-64px)] bg-white border-l border-gray-200 shadow-lg translate-x-full transition-transform duration-300 ease-out" id="notifPanel">
+   <div class="p-4 border-b">
+    <div class="flex items-center justify-between">
+     <h3 class="font-semibold text-gray-900">
+      Notifications
+     </h3>
+     <button class="text-gray-500 hover:text-gray-700" id="notifClose">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+   </div>
+   <div class="p-4 space-y-3 overflow-y-auto h-full">
+    <div class="p-3 rounded-md bg-blue-50 text-blue-800">
+     New feature: appointment prep checklist is live.
+    </div>
+    <div class="p-3 rounded-md bg-green-50 text-green-800">
+     System status: All services operational.
+    </div>
+    <div class="p-3 rounded-md bg-yellow-50 text-yellow-800">
+     Tip: Try our accessibility mode for larger text.
+    </div>
+    <div class="p-3 rounded-md bg-red-50 text-red-800">
+     Security reminder: Enable 2FA in settings.
+    </div>
+   </div>
+  </aside>
+  <!-- Help Assistant (Floating) -->
+  <div class="fixed bottom-4 right-4 z-50">
+   <button class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-teal-600 text-white shadow-lg hover:bg-teal-700" id="helpToggle">
+    <i class="fa-solid fa-comment-dots text-xl">
+    </i>
+   </button>
+   <div class="hidden mt-3 w-[90vw] sm:w-96 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden" id="helpPanel">
+    <div class="p-4 border-b flex items-center justify-between">
+     <h4 class="font-semibold text-gray-900">
+      Help Assistant
+     </h4>
+     <button class="text-gray-500 hover:text-gray-700" id="helpClose">
+      <i class="fa-solid fa-xmark">
+      </i>
+     </button>
+    </div>
+    <div class="p-4 space-y-3 max-h-64 overflow-y-auto">
+     <div class="text-sm text-gray-700">
+      Hi! Ask me about features, privacy, or how to get started.
+     </div>
+    </div>
+    <div class="p-3 border-t flex items-center gap-2">
+     <input class="flex-1 px-3 py-2 border border-gray-300 rounded-md" id="helpInput" placeholder="Type your question..." type="text"/>
+     <button class="px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700" id="helpSend">
+      <i class="fa-solid fa-paper-plane">
+      </i>
+     </button>
+    </div>
+   </div>
+  </div>
+  <!-- Page Loader Overlay -->
+  <div class="fixed inset-0 z-[100] bg-white/70 flex items-center justify-center hidden" id="page-loader">
+   <div class="flex flex-col items-center gap-3">
+    <span class="inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin">
+    </span>
+    <span class="text-gray-700">
+     Loading...
+    </span>
+   </div>
+  </div>
+  <script>
+   // Page Loading State
+document.addEventListener('DOMContentLoaded', () => {
+    const loader = document.getElementById('page-loader');
+    loader.classList.remove('hidden');
+    setTimeout(() => loader.classList.add('hidden'), 600);
+
+    // Onboarding Coach Marks (SweetAlert2)
+    try {
+        const seen = localStorage.getItem('about_coach_seen');
+        if (!seen) {
+            Swal.fire({
+                title: 'Welcome to the About Page',
+                html: '<div class="text-left">\
+                    <p class="mb-2">Explore our mission, team, and technology. Key tips:</p>\
+                    <ul class="list-disc pl-5 text-left">\
+                      <li>Use the sidebar to navigate Home, Features, and legal pages.</li>\
+                      <li>Toggle accessibility mode at the bottom-left.</li>\
+                      <li>Open notifications and the help assistant at the bottom-right.</li>\
+                    </ul>\
+                  </div>',
+                icon: 'info',
+                confirmButtonText: 'Got it',
+            }).then(() => localStorage.setItem('about_coach_seen', '1'));
+        }
+    } catch (e) {}
+});
+
+// Accessibility mode toggle
+const a11yToggle = document.getElementById('a11yToggle');
+a11yToggle.addEventListener('click', () => {
+    document.body.classList.toggle('accessibility-mode');
+    const enabled = document.body.classList.contains('accessibility-mode');
+    Swal.fire({
+        toast: true,
+        position: 'bottom-end',
+        icon: 'success',
+        title: enabled ? 'Accessibility mode enabled' : 'Accessibility mode disabled',
+        showConfirmButton: false,
+        timer: 2000
+    });
+});
+
+// Notifications panel toggle
+const notifToggle = document.getElementById('notifToggle');
+const notifPanel = document.getElementById('notifPanel');
+const notifClose = document.getElementById('notifClose');
+notifToggle.addEventListener('click', () => notifPanel.classList.toggle('translate-x-full'));
+notifClose.addEventListener('click', () => notifPanel.classList.add('translate-x-full'));
+
+// Help Assistant toggle
+const helpToggle = document.getElementById('helpToggle');
+const helpPanel = document.getElementById('helpPanel');
+const helpClose = document.getElementById('helpClose');
+helpToggle.addEventListener('click', () => helpPanel.classList.toggle('hidden'));
+helpClose.addEventListener('click', () => helpPanel.classList.add('hidden'));
+
+// Help Assistant send
+const helpInput = document.getElementById('helpInput');
+const helpSend = document.getElementById('helpSend');
+helpSend.addEventListener('click', () => {
+    const q = helpInput.value.trim();
+    if (!q) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Please type a question'
+        });
+        return;
+    }
+    Swal.fire({
+        icon: 'success',
+        title: 'Thanks!',
+        text: 'We\'ll get back to you shortly with more info.'
+    });
+    helpInput.value = '';
+});
+
+// Subscribe to updates (SweetAlert2)
+const subscribeBtn = document.getElementById('subscribeBtn');
+subscribeBtn.addEventListener('click', async () => {
+    const {
+        value: email
+    } = await Swal.fire({
+        title: 'Subscribe to Updates',
+        input: 'email',
+        inputLabel: 'Enter your email address',
+        inputPlaceholder: 'you@example.com',
+        showCancelButton: true,
+        confirmButtonText: 'Subscribe'
+    });
+    if (email) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Subscribed!',
+            text: 'You\'ll receive occasional updates.'
+        });
+    }
+});
+
+// Mission Text-to-Speech
+const ttsBtn = document.getElementById('ttsMission');
+ttsBtn.addEventListener('click', () => {
+    try {
+        const text = `Our Mission: To make healthcare more accessible, proactive, and personalized by combining trusted medical expertise with safe, assistive A I. We strive to empower patients and clinicians with timely insights, simple tools, and secure data practices. Our Vision: A world where everyone can confidently understand their health, access guidance early, and collaborate with their care team seamlessly.`;
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'en-US';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+    } catch (e) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Speech not supported',
+            text: 'Your browser may not support text-to-speech.'
+        });
+    }
+});
+
+// Tabs logic
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('bg-blue-50', 'text-blue-700'));
+        btn.classList.add('bg-blue-50', 'text-blue-700');
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById('tab-' + target).classList.remove('hidden');
+    });
+});
+
+// ApexCharts - Impact chart
+const impactOptions = {
+    chart: {
+        type: 'area',
+        height: 260,
+        toolbar: {
+            show: false
+        },
+        zoom: {
+            enabled: true
+        }
+    },
+    series: [{
+        name: 'Active Users',
+        data: [120, 150, 180, 160, 210, 240, 260, 300, 320, 370, 390, 420]
+    }],
+    xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    },
+    colors: ['#2563eb'],
+    dataLabels: {
+        enabled: false
+    },
+    stroke: {
+        curve: 'smooth'
+    },
+    fill: {
+        type: 'gradient',
+        gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.4,
+            opacityTo: 0.1
+        }
+    },
+    tooltip: {
+        theme: 'light'
+    }
+};
+const chart = new ApexCharts(document.querySelector('#impactChart'), impactOptions);
+chart.render();
+
+// Technology Stack Table - mock data, filter, sort
+const techData = [{
+    name: 'Tailwind CSS',
+    category: 'Framework',
+    version: '3.4.0',
+    updated: '2025-02-15',
+    site: 'https://tailwindcss.com'
+}, {
+    name: 'ApexCharts',
+    category: 'Library',
+    version: '3.45.2',
+    updated: '2025-01-28',
+    site: 'https://apexcharts.com'
+}, {
+    name: 'SweetAlert2',
+    category: 'Library',
+    version: '11.12.0',
+    updated: '2025-01-10',
+    site: 'https://sweetalert2.github.io'
+}, {
+    name: 'Font Awesome',
+    category: 'Library',
+    version: '6.4.0',
+    updated: '2024-11-20',
+    site: 'https://fontawesome.com'
+}, {
+    name: 'Poppins',
+    category: 'Service',
+    version: '1.0',
+    updated: '2024-08-01',
+    site: 'https://fonts.google.com'
+}, {
+    name: 'Web Speech API',
+    category: 'Service',
+    version: 'N/A',
+    updated: '2024-12-12',
+    site: 'https://developer.mozilla.org'
+}];
+
+const techBody = document.getElementById('techBody');
+const techSearch = document.getElementById('techSearch');
+const techCategory = document.getElementById('techCategory');
+const paginationInfo = document.getElementById('paginationInfo');
+let currentSort = {
+    key: 'name',
+    asc: true
+};
+
+function formatDate(d) {
+    const dt = new Date(d);
+    if (isNaN(dt)) return d;
+    return dt.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+function renderTable() {
+    const q = techSearch.value.trim().toLowerCase();
+    const cat = techCategory.value;
+    let rows = techData.filter(r => {
+        const matchQ = !q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q);
+        const matchC = !cat || r.category === cat;
+        return matchQ && matchC;
+    });
+    rows.sort((a, b) => {
+        const k = currentSort.key;
+        let av = a[k],
+            bv = b[k];
+        if (k === 'updated') {
+            av = new Date(av).getTime();
+            bv = new Date(bv).getTime();
+        }
+        if (av < bv) return currentSort.asc ? -1 : 1;
+        if (av > bv) return currentSort.asc ? 1 : -1;
+        return 0;
+    });
+
+    techBody.innerHTML = rows.map(r => `
+        <tr>
+          <td class="px-4 py-2">${r.name}</td>
+          <td class="px-4 py-2">${r.category}</td>
+          <td class="px-4 py-2">${r.version}</td>
+          <td class="px-4 py-2">${formatDate(r.updated)}</td>
+          <td class="px-4 py-2 space-x-2">
+            <a href="${r.site}" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Docs</a>
+            <button class="text-gray-700 hover:text-gray-900" onclick="Swal.fire({title: 'Coming soon', text: 'More actions will be available.', icon: 'info'})">More</button>
+          </td>
+        </tr>
+      `).join('');
+    paginationInfo.textContent = `Showing ${rows.length} of ${techData.length}`;
+}
+
+renderTable();
+techSearch.addEventListener('input', renderTable);
+techCategory.addEventListener('change', renderTable);
+
+document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+        const key = th.getAttribute('data-sort');
+        if (currentSort.key === key) {
+            currentSort.asc = !currentSort.asc;
+        } else {
+            currentSort.key = key;
+            currentSort.asc = true;
+        }
+        renderTable();
+    });
+});
+  </script>
+ </body>
+</html>
